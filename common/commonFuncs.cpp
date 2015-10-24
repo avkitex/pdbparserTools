@@ -1,8 +1,21 @@
 #include <iostream>
 
+#include "commonFuncs.h"
+
+
 using namespace std;
 
-
+bool in(char a, string s)
+{
+    for (int i = 0; i < s.size(); ++i)
+    {
+        if (a == s[i])
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 bool isdigit(char a) {
 	return (a >= '0' && a <= '9');
@@ -65,15 +78,4 @@ vector <string> split(string s, string chars)
         res.push_back(curs);
     }
     return res;
-}
-
-
-void warning(string function, string message) {
-    if (!NOWARNINGS) {
-        system("tput setf 3");
-        cerr << "Warning!!! Function " << function << ". Msg: " << message;
-        system("tput setf 7");
-        cerr << "\n";
-    }
-	return;
 }
