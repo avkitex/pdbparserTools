@@ -6,11 +6,12 @@
 #include <vector>
 #include <cstdlib>
 #include <queue>
+#include <stdio.h>
 
 #include <unistd.h>
 #include <ctime>
 
-#define VERSION "1.0.1"
+#define VERSION "0.1"
 
 using namespace std;
 
@@ -48,12 +49,11 @@ class pdbqtFile{
         name = "";
     }
 
-    bool outPdbqtFile(string filePath){
+    bool outPdbqtFile(){
         if (!name.size()){
             return 1;
         }
-        string fullFileName = filePath + name;
-        ofstream fout(fullFileName.c_str());
+        ofstream fout((name + ".pdbqt").c_str());
         if (!fout){
             return 1;
         }
@@ -73,11 +73,11 @@ class pdbqtFile{
     }
 };
 
-class multiPdbqtFile{
+class multiPdbqtFileReader{
     ifstream fileHandle;
     int modelsReturned;
 
-    multiPdbqtFile(string file, int skipStr){
+    multiPdbqtFileReader(string file, int skipStr){
         fileHandle = new ifstream(file.c_str());
         modelsReturned = 0;
         while (getline(fileHandle, s) && skipStr > 0){
@@ -88,12 +88,13 @@ class multiPdbqtFile{
         }
     }
 
-    pdbqtFile getNextPdbqt(string fileName){
-        pdbqtFile file;
+    pdbqtFile getNextPdbqt(pdbqtFile file){
         string s;
+        file.clear();
         while (getline(fileHandle, s)){
             if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
                 if (file.size()){
+                    modelsReturned++;
                     return file;
                 }
             }
@@ -105,8 +106,34 @@ class multiPdbqtFile{
             }
             file.addString(s);
         }
+        return file;
+    }
+
+    void close(){
+        fileHandle.close();
     }
 };
+
+class multiPdbqtFileConstructor{
+    ofstream fileHandle;
+    int modelCounter;
+
+    multiPdbqtFileConstructor(string file){
+        fileHandle = new ofstream(file.c_str());
+        modelCounter = 1;
+    }
+
+    void add(pdbqtFile & file){
+        fileHandle << "MODEL " << modelCounter << "\n";
+        for (int i = 0; i < file.size(); ++i){
+            fileHandle << file.strings[i] << "\n";
+        }
+        fileHandle << "ENDMDL\n";
+    }
+    void close(){
+        fileHandle.close();
+    }
+}
 
 class freeCores{
 	queue <int> cores;
@@ -115,22 +142,55 @@ class freeCores{
         cores.clear();
 	}
 
+	void add(int rank){
+        cores.push(rank);
+	}
+
+	int get(){
+        if (cores.size()){
+            int a = cores.front();
+            cores.pop();
+            return a;
+        }
+        return 0;
+	}
 };
+
+class logSummaryConstructor{
+    ofstream fileHandle;
+    logSummaryConstructor(string file){
+        fileHandle = new ofstream(file.c_str());
+    }
+
+    void add(string name, vinaOutLog &vinaRes){
+        fileHandle << name;
+        for (int i = 0; i < vinaRes.store.size(); ++i){
+            fileHandle << "\t" << vinaRes.store[i];
+        }
+        fileHandle << "\n";
+    }
+    void finalize(){
+        fileHandle.close();
+    }
+};
+
+void deleteFile(string name){
+    return remove(name.c_str());
+}
 
 
 int main(int argc, char **argv)
 {
 	int rank, a, am_works = 0, cores;
-	int t[2];
-	time_t timer;
-	string multiPdbqtfile, programName, restParams, s;
+	//time_t timer;
+	string multiPdbqtFileName, programName, restParams;
 
 	vector <string> arguments;
 	vector <string> path;
 	if (argc == 4)
 	{
 		programm = argv[1];
-        multiPdbqtfile = argv[2];
+        multiPdbqtFileName = argv[2];
         restParams = argv[3];
 	}
 	else
@@ -140,64 +200,84 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	multiPdbqtFile masterFile(multiPdbqtfile, 0);
-	pdbqtFile file;
+
+    char receivedCharArr[100];
+    string receivedStr;
 
 
 	MPI_Init(&argc, &argv);
 	MPI_Status status;
 
-    MPI_Comm_size(MPI_COMM_WORLD,&cores);
+    MPI_Comm_size(MPI_COMM_WORLD, &cores);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0)
     {
-        for (int i = 0; i < arguments.size(); ++i)
-        {
-            q.push(i);
-        }
+        multiPdbqtFileConstructor MAINOUTPUT_pdbqtFileConstructor("AllResults.pdbqt");
+        logSummaryConstructor MAINOUTPUT_logFileConstructor("AllLogs.logs");
+        multiPdbqtFileReader masterFile(multiPdbqtFileName, 0);
+        multiPdbqtFileReader vinaOutPdbqt;
+        vinaResult vinaOutLog;
+        pdbqtFile file, vinaResFile;
         cout << rank << " I'm the BOSS\n";
-        while (q.size() > 0)
+        masterFile.getNextPdbqt(file);
+        while (file.size())
         {
-            MPI_Recv(t, 2, MPI_INT, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
-            cout << "New job " << q.front() << " for process " << status.MPI_SOURCE << "\n";
-            t[0] = q.front();
-            q.pop();
-            MPI_Send(&t, 2, MPI_INT, status.MPI_SOURCE, 11, MPI_COMM_WORLD);
-        }
-        while (q2.size() < cores - 1)
-        {
-            MPI_Recv(t, 2, MPI_INT, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
-            cout << "No more jobs! " << status.MPI_SOURCE << "\n";
-            q2.push(t[0]);
-            t[0] = -1;
-            MPI_Send(&t, 2, MPI_INT, status.MPI_SOURCE, 11, MPI_COMM_WORLD);
-        }
+            if (file.outPdbqtFile()){
+                cout << "Error with file " << file.name << "\n";
+            }
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            if (strlen(receivedCharArr)){
+                receivedStr = new string(receivedCharArr);
 
+                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + ".pdbqt", 0);
+                vinaOutPdbqt.getNextPdbqt(vinaResFile);
+                vinaOutPdbqt.close();
+                MAINOUTPUT_pdbqtFileConstructor.add(vinaResFile);
+                deleteFile(receivedStr + ".pdbqt");
+
+                vinaOutLog.parseLogFile(receivedStr + ".log");
+                MAINOUTPUT_logFileConstructor.add(vinaOutLog)
+                deleteFile(receivedStr + ".log");
+            }
+
+
+            cout << "New job " << file.name << " for process " << status.MPI_SOURCE << "\n";
+
+            MPI_Send(file.name.c_str(), file.name.size(), MPI_CHAR, status.MPI_SOURCE, 11, MPI_COMM_WORLD);
+
+
+
+
+            masterFile.getNextPdbqt(file);
+        }
+        int countCores = 0;
+        cout << "No more jobs!\n";
+        while (countCores < cores - 1)
+        {
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            countCores++;
+            receivedCharArr = "";
+            MPI_Send(receivedCharArr, 0, MPI_CHAR, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD);
+        }
     }
     else
     {
-        time(&timer);
-
-        t[0] = rank;
-        MPI_Rsend(&t, 2, MPI_INT, 0, 11, MPI_COMM_WORLD);
-        MPI_Recv(t, 2, MPI_INT, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
-        while (t[0] != -1)
+        //time(&timer);
+        receivedCharArr = "";
+        MPI_Rsend(receivedCharArr, 0, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
+        MPI_Recv(receivedCharArr, 100, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        receivedStr = new string(receivedCharArr);
+        while (receivedStr.size())
         {
-            cout << rank << " received job number " << t[0] <<  "\n";
-            if (chdir(path[t[0]].c_str()) == -1)
-            {
-                cout << rank << " Unable to change directory. Job terminated\n";
-                exit(1);
-            }
-            s = programm + " " + arguments[t[0]];// + " 2>&1 >> " + itostr(rank) + "log.txt";
-            //system("date");
-            system(s.c_str());
-            //system("date");
+            cout << rank << " received ligand " << receivedStr <<  "\n";
 
-            t[0] = rank;
-            MPI_Send(&t, 2, MPI_INT, 0, 11, MPI_COMM_WORLD);
-            MPI_Recv(t, 2, MPI_INT, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
-        //execl(programm.c_str(), programm.c_str(), arguments[n].c_str(), (char *)0);
+            s = programm + " " + restParams + " --ligand " + receivedStr + ".pdbqt --log " + receivedStr + ".log";
+
+            system(s.c_str());
+
+            MPI_Send(receivedStr.c_str(), receivedStr.size(), MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            receivedStr = new string(receivedCharArr);
         }
     }
 	MPI_Finalize();
