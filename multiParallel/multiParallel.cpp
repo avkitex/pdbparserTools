@@ -88,7 +88,6 @@ public:
         string s;
         file.clear();
         while (getline(fileHandle, s)){
-//            cout << s << "\n";
             if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
                 if (file.size()){
                     modelsReturned++;
@@ -117,20 +116,22 @@ class multiPdbqtFileConstructor{
 public:
     ofstream fileHandle;
     int modelCounter;
+    string fileName;
 
     multiPdbqtFileConstructor(string file){
         fileHandle.open(file.c_str());
         modelCounter = 1;
+        fileName = file;
+        fileHandle.close();
     }
 
     void add(pdbqtFile & file){
+        fileHandle.open(fileName.c_str(), ofstream::out | ofstream::app);
         fileHandle << "MODEL " << modelCounter << "\n";
         for (int i = 0; i < file.size(); ++i){
             fileHandle << file.strings[i] << "\n";
         }
         fileHandle << "ENDMDL\n";
-    }
-    void close(){
         fileHandle.close();
     }
 };
@@ -160,17 +161,21 @@ class logSummaryConstructor{
 public:
     ofstream fileHandle;
     int maxResults;
+    string fileName;
     logSummaryConstructor(string file){
-        fileHandle.open(file.c_str());
+        fileName = file;
+        fileHandle.open(fileName.c_str());
         maxResults = 3;
         fileHandle << "Name\t1_Energy";
         for (int i = 1; i < maxResults; ++i){
             fileHandle << "\t" << i + 1 << "_Energy\t" << i + 1 << "_RMSDLB\t" << i + 1 << "_RMSDRB";
         }
         fileHandle << "\n";
+        fileHandle.close();
     }
 
     void add(string name, vinaResult &vinaRes){
+        fileHandle.open(fileName.c_str(), ofstream::out | ofstream::app);
         fileHandle << name;
         if (vinaRes.store.size()){
             fileHandle << "\t" << vinaRes.store[0].energy;
@@ -182,8 +187,6 @@ public:
             fileHandle << "\t" << vinaRes.store[i].rmsdUB;
         }
         fileHandle << "\n";
-    }
-    void close(){
         fileHandle.close();
     }
 };
@@ -304,8 +307,6 @@ int main(int argc, char **argv)
             countCores++;
             MPI_Send((char *)receivedStr.c_str(), 0, MPI_CHAR, status.MPI_SOURCE, 11, MPI_COMM_WORLD);
         }
-        MAINOUTPUT_pdbqtFileConstructor.close();
-        MAINOUTPUT_pdbqtFileConstructor.close();
     }
     else
     {
