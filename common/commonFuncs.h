@@ -10,7 +10,7 @@ bool in(char a, string s);
 
 bool isdigit(char a);
 
-int strtodoub(string s);
+double strtodoub(string s);
 
 vector <string> split(string s, string chars);
 

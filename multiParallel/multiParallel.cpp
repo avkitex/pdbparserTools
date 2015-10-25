@@ -14,7 +14,7 @@
 #include "../common/vinaLogFileParser.h"
 #include "../common/vinaLogFileParser.cpp"
 
-#define VERSION "0.2"
+#define VERSION "1.0"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ public:
         return 0;
     }
 
-    void addString(string s){
+    void add(string s){
         strings.push_back(s);
     }
 
@@ -75,22 +75,25 @@ public:
         string s;
         fileHandle.open(file.c_str());
         modelsReturned = 0;
-        while (getline(fileHandle, s) && skipStr > 0){
+        while (skipStr > 0 && getline(fileHandle, s)){
             if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
                 modelsReturned++;
                 skipStr--;
             }
         }
+        cout << "Skipped " << modelsReturned << "\n";
     }
 
-    pdbqtFile getNextPdbqt(pdbqtFile file){
+    void getNextPdbqt(pdbqtFile &file){
         string s;
         file.clear();
         while (getline(fileHandle, s)){
+//            cout << s << "\n";
             if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
                 if (file.size()){
                     modelsReturned++;
-                    return file;
+                    cout << "Returning file " << file.name << "\n";
+                    return;
                 }
             }
             if (s.size() > 4 && s.substr(0, 5) == "MODEL"){
@@ -99,9 +102,10 @@ public:
             if (s.size() > 15 && s.substr(0, 15) == "REMARK  Name = "){
                 file.name = s.substr(15, s.size() - 15);
             }
-            file.addString(s);
+            file.add(s);
         }
-        return file;
+        cout << "Nothing more to read\n";
+        return;
     }
 
     void close(){
@@ -155,18 +159,31 @@ public:
 class logSummaryConstructor{
 public:
     ofstream fileHandle;
+    int maxResults;
     logSummaryConstructor(string file){
         fileHandle.open(file.c_str());
+        maxResults = 3;
+        fileHandle << "Name\t1_Energy";
+        for (int i = 1; i < maxResults; ++i){
+            fileHandle << "\t" << i + 1 << "_Energy\t" << i + 1 << "_RMSDLB\t" << i + 1 << "_RMSDRB";
+        }
+        fileHandle << "\n";
     }
 
     void add(string name, vinaResult &vinaRes){
         fileHandle << name;
-        for (int i = 0; i < vinaRes.store.size(); ++i){
+        if (vinaRes.store.size()){
+            fileHandle << "\t" << vinaRes.store[0].energy;
+        }
+        int mm = min(maxResults, (int)vinaRes.store.size());
+        for (int i = 1; i < mm; ++i){
             fileHandle << "\t" << vinaRes.store[i].energy;
+            fileHandle << "\t" << vinaRes.store[i].rmsdLB;
+            fileHandle << "\t" << vinaRes.store[i].rmsdUB;
         }
         fileHandle << "\n";
     }
-    void finalize(){
+    void close(){
         fileHandle.close();
     }
 };
@@ -197,9 +214,9 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-
     char receivedCharArr[100];
     string receivedStr;
+    int length;
 
 
 	MPI_Init(&argc, &argv);
@@ -210,7 +227,7 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
         multiPdbqtFileConstructor MAINOUTPUT_pdbqtFileConstructor("AllResults.pdbqt");
-        logSummaryConstructor MAINOUTPUT_logFileConstructor("AllLogs.logs");
+        logSummaryConstructor MAINOUTPUT_logFileConstructor("AllLogs.log");
         multiPdbqtFileReader masterFile(multiPdbqtFileName, 0);
         multiPdbqtFileReader * vinaOutPdbqt;
         vinaResult vinaOutLog;
@@ -222,21 +239,26 @@ int main(int argc, char **argv)
             if (file.outPdbqtFile()){
                 cout << "Error with file " << file.name << "\n";
             }
-            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            if (strlen(receivedCharArr)){
-                receivedStr = string(receivedCharArr);
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
+            MPI_Get_count(&status, MPI_CHAR, &length); //Getting exact length of the string
+            if (length){
 
-                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + ".pdbqt", 0);
+                receivedStr = string(receivedCharArr, length); //Constructing the string
+                deleteFile(receivedStr + ".pdbqt");
+
+                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + "_out.pdbqt", 0);
                 vinaOutPdbqt->getNextPdbqt(vinaResFile);
                 vinaOutPdbqt->close();
                 MAINOUTPUT_pdbqtFileConstructor.add(vinaResFile);
-                deleteFile(receivedStr + (".pdbqt"));
 
-                if (vinaOutLog.parseLogFile(receivedStr + ".log")){
+                deleteFile(receivedStr + "_out.pdbqt");
+
+                if (vinaOutLog.parseLogFile(receivedStr + "_out.log")){
                     cout << "Error " << receivedStr << "\n";
                 }
                 MAINOUTPUT_logFileConstructor.add(receivedStr, vinaOutLog);
-                deleteFile(receivedStr + (".log"));
+
+                deleteFile(receivedStr + "_out.log");
             }
 
 
@@ -248,35 +270,74 @@ int main(int argc, char **argv)
 
 
             masterFile.getNextPdbqt(file);
+
         }
+        masterFile.close();
         int countCores = 0;
         cout << "No more jobs!\n";
-        receivedStr = "";
-        while (countCores < cores - 1)
+        receivedStr = string("");
+        while (countCores < cores - 1) // Zero is me =)
         {
-            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
+            MPI_Get_count(&status, MPI_CHAR, &length); //Getting exact length of the string
+            if (length){
+
+                receivedStr = string(receivedCharArr, length); //Constructing the string
+                deleteFile(receivedStr + ".pdbqt");
+
+                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + "_out.pdbqt", 0);
+                vinaOutPdbqt->getNextPdbqt(vinaResFile);
+                vinaOutPdbqt->close();
+                MAINOUTPUT_pdbqtFileConstructor.add(vinaResFile);
+
+                deleteFile(receivedStr + "_out.pdbqt");
+
+                if (vinaOutLog.parseLogFile(receivedStr + "_out.log")){
+                    cout << "Error " << receivedStr << "\n";
+                }
+                MAINOUTPUT_logFileConstructor.add(receivedStr, vinaOutLog);
+
+                deleteFile(receivedStr + "_out.log");
+            }
+
+
             countCores++;
-            MPI_Send((char *)receivedStr.c_str(), 0, MPI_CHAR, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD);
+            MPI_Send((char *)receivedStr.c_str(), 0, MPI_CHAR, status.MPI_SOURCE, 11, MPI_COMM_WORLD);
         }
+        MAINOUTPUT_pdbqtFileConstructor.close();
+        MAINOUTPUT_pdbqtFileConstructor.close();
     }
     else
     {
         receivedStr = "";
-        MPI_Rsend((char *)receivedStr.c_str(), 0, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
-        MPI_Recv(receivedCharArr, 100, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        receivedStr = string(receivedCharArr);
-        string executStr;
-        while (receivedStr.size())
+
+        MPI_Send((char *)receivedStr.c_str(), receivedStr.size(), MPI_CHAR, 0, 11, MPI_COMM_WORLD); //Sending an ask for a new job
+        MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status); //Receiving a new job new job
+        MPI_Get_count(&status, MPI_CHAR, &length); //Getting exact length of the string
+        receivedStr = string(receivedCharArr, length); //Constructing the string the string
+
+        string executeStr;
+        while (receivedStr.size()) //If length is zero - no more jobs
         {
             cout << rank << " received ligand " << receivedStr <<  "\n";
 
-            executStr = programm + " " + restParams + " --ligand " + receivedStr + ".pdbqt --log " + receivedStr + ".log";
+            executeStr = programm;
+            executeStr += " ";
+            executeStr += restParams;
+            executeStr += " --ligand ";
+            executeStr += receivedStr;
+            executeStr += ".pdbqt --log ";
+            executeStr += receivedStr;
+            executeStr += "_out.log --out ";
+            executeStr += receivedStr;
+            executeStr += "_out.pdbqt";
 
-            system(executStr.c_str());
+            system(executeStr.c_str()); //Running the job
+            MPI_Send((char *)receivedStr.c_str(), receivedStr.size(), MPI_CHAR, 0, 11, MPI_COMM_WORLD); //Sending an ask for a new job
 
-            MPI_Send((char *)receivedStr.c_str(), receivedStr.size(), MPI_CHAR, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
-            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            receivedStr = string(receivedCharArr);
+            MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status); //Receiving a new job new job
+            MPI_Get_count(&status, MPI_CHAR, &length); //Getting exact length of the string
+            receivedStr = string(receivedCharArr, length); //Constructing the string the string
         }
     }
 	MPI_Finalize();

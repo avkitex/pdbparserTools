@@ -21,9 +21,10 @@ bool isdigit(char a) {
 	return (a >= '0' && a <= '9');
 }
 
-int strtodoub(string s)
+double strtodoub(string s)
 {
-	int ans = 0, i = 0;
+	int i = 0, mantissa = 1;
+	double result = 0;
 	bool minus = false;
 	while(i < s.size() && !isdigit(s[i]) && s[i] != '-')
 	{
@@ -36,8 +37,8 @@ int strtodoub(string s)
 	}
 	while(i < s.size() && isdigit(s[i]))
 	{
-		ans *= 10;
-		ans += s[i] - '0';
+		result *= 10;
+		result += int(s[i] - '0');
 		i++;
 	}
 	if (s[i] == '.' || s[i] == ',' )
@@ -46,11 +47,12 @@ int strtodoub(string s)
 	}
 	while(i < s.size() && isdigit(s[i]))
 	{
-		ans *= 10;
-		ans += s[i] - '0';
+	    mantissa *= 10;
+		result *= 10;
+		result += int(s[i] - '0');
 		i++;
 	}
-	return ans * (minus ? -1 : 1);
+	return result * (minus ? -1 : 1) / mantissa;
 }
 
 vector <string> split(string s, string chars)
