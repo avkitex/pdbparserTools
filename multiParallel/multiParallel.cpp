@@ -14,6 +14,9 @@
 #include "../common/vinaLogFileParser.h"
 #include "../common/vinaLogFileParser.cpp"
 
+#include "../common/pdbqtFileStringsRW.h"
+#include "../common/pdbqtFileStringsRW.cpp"
+
 #define VERSION "1.0"
 
 using namespace std;
@@ -27,114 +30,6 @@ void help(string p_name)
     return;
 }
 
-class pdbqtFile{
-public:
-    vector <string> strings;
-
-    string name;
-
-    pdbqtFile(){
-        clear();
-    }
-
-    void clear(){
-        strings.clear();
-        name = "";
-    }
-
-    bool outPdbqtFile(){
-        if (!name.size()){
-            return 1;
-        }
-        ofstream fout((name + ".pdbqt").c_str());
-        if (!fout){
-            return 1;
-        }
-        for (unsigned int i = 0; i < strings.size(); ++i){
-            fout << strings[i] << "\n";
-        }
-        fout.close();
-        return 0;
-    }
-
-    void add(string s){
-        strings.push_back(s);
-    }
-
-    int size(){
-        return strings.size();
-    }
-};
-
-class multiPdbqtFileReader{
-public:
-    ifstream fileHandle;
-    int modelsReturned;
-
-    multiPdbqtFileReader(string file, int skipStr){
-        string s;
-        fileHandle.open(file.c_str());
-        modelsReturned = 0;
-        while (skipStr > 0 && getline(fileHandle, s)){
-            if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
-                modelsReturned++;
-                skipStr--;
-            }
-        }
-        cout << "Skipped " << modelsReturned << "\n";
-    }
-
-    void getNextPdbqt(pdbqtFile &file){
-        string s;
-        file.clear();
-        while (getline(fileHandle, s)){
-            if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
-                if (file.size()){
-                    modelsReturned++;
-                    cout << "Returning file " << file.name << "\n";
-                    return;
-                }
-            }
-            if (s.size() > 4 && s.substr(0, 5) == "MODEL"){
-                continue;
-            }
-            if (s.size() > 15 && s.substr(0, 15) == "REMARK  Name = "){
-                file.name = s.substr(15, s.size() - 15);
-            }
-            file.add(s);
-        }
-        cout << "Nothing more to read\n";
-        return;
-    }
-
-    void close(){
-        fileHandle.close();
-    }
-};
-
-class multiPdbqtFileConstructor{
-public:
-    ofstream fileHandle;
-    int modelCounter;
-    string fileName;
-
-    multiPdbqtFileConstructor(string file){
-        fileHandle.open(file.c_str());
-        modelCounter = 1;
-        fileName = file;
-        fileHandle.close();
-    }
-
-    void add(pdbqtFile & file){
-        fileHandle.open(fileName.c_str(), ofstream::out | ofstream::app);
-        fileHandle << "MODEL " << modelCounter << "\n";
-        for (int i = 0; i < file.size(); ++i){
-            fileHandle << file.strings[i] << "\n";
-        }
-        fileHandle << "ENDMDL\n";
-        fileHandle.close();
-    }
-};
 
 class freeCores{
 public:
@@ -195,12 +90,22 @@ void deleteFile(string name){
     remove(name.c_str());
 }
 
+string readParams(string file){
+    ifstream fin(file.c_str());
+
+    string s;
+
+    getline(fin, s);
+    fin.close();
+
+    return s;
+}
 
 int main(int argc, char **argv)
 {
 	int rank, a, am_works = 0, cores;
 	//time_t timer;
-	string multiPdbqtFileName, programName, restParams, programm;
+	string multiPdbqtFileName, programName, restParams, programm, name, dir, ext;
 
 	vector <string> arguments;
 	vector <string> path;
@@ -208,7 +113,15 @@ int main(int argc, char **argv)
 	{
 		programm = argv[1];
         multiPdbqtFileName = argv[2];
+        cout << argv[3] << "\n";
         restParams = argv[3];
+        parseFileName(restParams, dir, name, ext);
+        if (ext == "txt" || ext == "param")
+        {
+            restParams = readParams(argv[3]);
+        }
+        cout << restParams << "\n";
+
 	}
 	else
 	{
@@ -229,17 +142,17 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0)
     {
-        multiPdbqtFileConstructor MAINOUTPUT_pdbqtFileConstructor("AllResults.pdbqt");
+        multipdbqtFileStringsConstructor MAINOUTPUT_pdbqtFileConstructor("AllResults.pdbqt");
         logSummaryConstructor MAINOUTPUT_logFileConstructor("AllLogs.log");
-        multiPdbqtFileReader masterFile(multiPdbqtFileName, 0);
-        multiPdbqtFileReader * vinaOutPdbqt;
+        multipdbqtFileStringsReader masterFile(multiPdbqtFileName, 0);
+        multipdbqtFileStringsReader * vinaOutPdbqt;
         vinaResult vinaOutLog;
-        pdbqtFile file, vinaResFile;
+        pdbqtFileStrings file, vinaResFile;
         cout << rank << " I'm the BOSS\n";
         masterFile.getNextPdbqt(file);
         while (file.size())
         {
-            if (file.outPdbqtFile()){
+            if (file.outpdbqtFileStrings()){
                 cout << "Error with file " << file.name << "\n";
             }
             MPI_Recv(receivedCharArr, 100, MPI_CHAR, MPI_ANY_SOURCE, 11, MPI_COMM_WORLD, &status);
@@ -249,7 +162,7 @@ int main(int argc, char **argv)
                 receivedStr = string(receivedCharArr, length); //Constructing the string
                 deleteFile(receivedStr + ".pdbqt");
 
-                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + "_out.pdbqt", 0);
+                vinaOutPdbqt = new multipdbqtFileStringsReader(receivedStr + "_out.pdbqt", 0);
                 vinaOutPdbqt->getNextPdbqt(vinaResFile);
                 vinaOutPdbqt->close();
                 MAINOUTPUT_pdbqtFileConstructor.add(vinaResFile);
@@ -288,7 +201,7 @@ int main(int argc, char **argv)
                 receivedStr = string(receivedCharArr, length); //Constructing the string
                 deleteFile(receivedStr + ".pdbqt");
 
-                vinaOutPdbqt = new multiPdbqtFileReader(receivedStr + "_out.pdbqt", 0);
+                vinaOutPdbqt = new multipdbqtFileStringsReader(receivedStr + "_out.pdbqt", 0);
                 vinaOutPdbqt->getNextPdbqt(vinaResFile);
                 vinaOutPdbqt->close();
                 MAINOUTPUT_pdbqtFileConstructor.add(vinaResFile);

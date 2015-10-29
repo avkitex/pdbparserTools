@@ -81,3 +81,35 @@ vector <string> split(string s, string chars)
     }
     return res;
 }
+
+void parseFileName(string s, string &path, string &name, string &ext)
+{
+    int i = s.size() - 1;
+    ext = "";
+    name = "";
+    path = "";
+    while (i >= 0 && s[i] != '/' && s[i] != '.')
+    {
+        --i;
+    }
+    if (s[i] == '.')
+    {
+        ext = s.substr(i + 1, s.size() - i - 1);
+        s = s.substr(0, i);
+    }
+    while (i >= 0 && s[i] != '/')
+    {
+        --i;
+    }
+    if (s[i] == '/')
+    {
+        name = s.substr(i + 1, s.size() - i - 1);
+        path = s.substr(0, i + 1);
+    }
+    if (i < 0)
+    {
+        name = s;
+        path = "";
+    }
+    return;
+}
