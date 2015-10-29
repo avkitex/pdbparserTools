@@ -103,25 +103,25 @@ string readParams(string file){
 
 int main(int argc, char **argv)
 {
-	int rank, a, am_works = 0, cores;
+	int rank, a, am_works = 0, cores, skipLigands = 0;
 	//time_t timer;
 	string multiPdbqtFileName, programName, restParams, programm, name, dir, ext;
 
 	vector <string> arguments;
 	vector <string> path;
-	if (argc == 4)
+	if (argc >= 4)
 	{
 		programm = argv[1];
         multiPdbqtFileName = argv[2];
-        cout << argv[3] << "\n";
         restParams = argv[3];
         parseFileName(restParams, dir, name, ext);
         if (ext == "txt" || ext == "param")
         {
             restParams = readParams(argv[3]);
         }
-        cout << restParams << "\n";
-
+        if (argc == 5){
+            skipLigands = strtoint(argv[4]);
+        }
 	}
 	else
 	{
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     {
         multipdbqtFileStringsConstructor MAINOUTPUT_pdbqtFileConstructor("AllResults.pdbqt");
         logSummaryConstructor MAINOUTPUT_logFileConstructor("AllLogs.log");
-        multipdbqtFileStringsReader masterFile(multiPdbqtFileName, 0);
+        multipdbqtFileStringsReader masterFile(multiPdbqtFileName, skipLigands);
         multipdbqtFileStringsReader * vinaOutPdbqt;
         vinaResult vinaOutLog;
         pdbqtFileStrings file, vinaResFile;

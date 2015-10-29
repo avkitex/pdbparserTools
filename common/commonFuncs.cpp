@@ -113,3 +113,26 @@ void parseFileName(string s, string &path, string &name, string &ext)
     }
     return;
 }
+
+int strtoint(string s)
+{
+	int i = 0, ans = 0;
+	bool minus = false;
+	while(i < s.size() && !isdigit(s[i]) && s[i] != '-')
+	{
+		++i;
+	}
+	if (s[i] == '-')
+	{
+		minus = true;
+		++i;
+	}
+	while(i < s.size() && isdigit(s[i]))
+	{
+		ans *= 10;
+		ans += s[i] - '0';
+		++i;
+	}
+	return ans * (minus ? -1 : 1);
+}
+

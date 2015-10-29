@@ -14,4 +14,6 @@ double strtodoub(string s);
 
 vector <string> split(string s, string chars);
 
+int strtoint(string s);
+
 #endif
