@@ -5,16 +5,13 @@
 #include <cstdlib>
 
 
-#include "../common/residue/pdbqtFileStringsRW.h"
-#include "../common/residue/pdbqtFileStringsRW.cpp"
+#include "../common/pdbqtFileStringsRW.h"
 
-#include "../common/residue/commonFuncs.h"
-#include "../common/residue/commonFuncs.cpp"
+#include "../common/commonFuncs.h"
 
 #include "elementsRepo/elementsRepo.h"
-#include "elementsRepo/elementsRepo.cpp"
 
-#define VERSION "0.1"
+#define VERSION "1.0"
 
 
 using namespace std;
@@ -26,6 +23,21 @@ void help(){
     return;
 }
 
+string getElementPdbqtStrings(string s){
+	return trim(s.substr(12, 2));
+}
+
+double countMass(pdbqtFileStrings & ligand){
+	double mass = 0;
+	string element, name;
+	for (int i = 0; i < ligand.size(); ++i){
+		if (ligand.strings[i].substr(0, 4) == "ATOM"){
+			element = getElementPdbqtStrings(ligand.strings[i]);
+			mass += elementsRepo::Instanse()->getValue(element);
+		}
+	}
+	return mass;
+}
 
 
 int main(int argc, char ** argv)
@@ -39,11 +51,16 @@ int main(int argc, char ** argv)
     else{
         inputFile = argv[1];
     }
+    ofstream mout("masses.txt");
     elementsRepo elements();
     pdbqtFileStrings file;
     multipdbqtFileStringsReader multipdbqtfile(inputFile, 0);
-
-
-
+    multipdbqtfile.getNextPdbqt(file);
+    while (file.size()){
+		mout << file.name << "\t" << countMass(file) << "\n";
+		multipdbqtfile.getNextPdbqt(file);
+    }
+	mout.close();
+	return 0;
 }
 

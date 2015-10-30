@@ -136,3 +136,48 @@ int strtoint(string s)
 	return ans * (minus ? -1 : 1);
 }
 
+string trim(string s)
+{
+	int i = 0, j;
+	while (i < s.size() && !isletter(s[i]))
+	{
+		i++;
+	}
+	j = i + 1;
+	while (j < s.size() && (isletter(s[j]) || isdigit(s[j]) || s[j] == '\''))
+	{
+		j++;
+	}
+	return s.substr(i, j - i);
+}
+
+bool isletter(char a)
+{
+	return isUpperLetter(a) || isLowerLetter(a);
+}
+
+bool isUpperLetter(char a){
+	return a <= 'Z' && a >= 'A';
+}
+
+bool isLowerLetter(char a){
+	return a <= 'z' && a >= 'a';
+}
+
+string toLowerCase(string s)
+{
+	string result = "";
+	for (int i = 0; i < s.size(); ++i)
+	{
+		if (isletter(s[i])){
+			if (isUpperLetter(s[i])){
+				result += char (s[i] -('A' - 'a'));
+			} else {
+				result += s[i];
+			}
+		} else {
+			result += s[i];
+		}
+	}
+	return result;
+}

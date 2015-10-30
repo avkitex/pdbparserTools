@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   elementsRepo.h
  * Author: Никита
  *
@@ -9,7 +9,10 @@
 #define	ELEMENTSREPO_H
 
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <map>
+
 using namespace std;
 
 #define ELEMENTS_FILE "elements.dat"
@@ -19,9 +22,9 @@ class elementsRepo {
 public:
     void readDatFile();
     double getValue(string s);
-    
+
     static elementsRepo * Instanse() {
-        if(!inst){           
+        if(!inst){
             inst = new elementsRepo();
         }
         return inst;

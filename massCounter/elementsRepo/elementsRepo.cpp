@@ -1,15 +1,12 @@
-/* 
+/*
  * File:   elementsRepo.cpp
  * Author: Никита
- * 
+ *
  * Created on 29 октября 2015 г., 15:35
  */
 
-#include <fstream>
-#include <vector>
-
 #include "elementsRepo.h"
-#include "commonFuncs.h"
+#include "../../common/commonFuncs.h"
 
 using namespace std;
 
@@ -21,17 +18,19 @@ elementsRepo::elementsRepo(){
 void elementsRepo::readDatFile(){
     ifstream din (ELEMENTS_FILE);
 
-    string s;
+    string s, element;
     double val;
     vector <string> splitedStr;
 
     while (getline(din, s)){
         splitedStr = split(s, "\t");
-        if (masses.count(splitedStr[1])){
-            cerr << "Double " << splitedStr[1] << " entry\n";
+        element = toLowerCase(splitedStr[1]);
+        cout << element << " ";
+        if (masses.count(element)){
+            cerr << "Double " << element << " entry\n";
         } else {
-                val = strtodoub(splitedStr[3]);
-            masses[splitedStr[1]] = val;
+			val = strtodoub(splitedStr[3]);
+            masses[element] = val;
         }
     }
 
@@ -39,6 +38,7 @@ void elementsRepo::readDatFile(){
 }
 
 double elementsRepo::getValue(string s){
+	s = toLowerCase(s);
     if (masses.count(s)){
         return masses[s];
     } else{

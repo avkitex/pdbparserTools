@@ -1,6 +1,13 @@
 #ifndef PDBQT_FILE_STRINGS_RW
 #define PDBQT_FILE_STRINGS_RW
 
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+
 class pdbqtFileStrings{
 public:
     vector <string> strings;
