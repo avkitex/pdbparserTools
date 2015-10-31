@@ -11,11 +11,9 @@
 #include <unistd.h>
 #include <ctime>
 
+#include "../common/commonFuncs.h"
 #include "../common/vinaLogFileParser.h"
-#include "../common/vinaLogFileParser.cpp"
-
 #include "../common/pdbqtFileStringsRW.h"
-#include "../common/pdbqtFileStringsRW.cpp"
 
 #define VERSION "1.0"
 

@@ -13,6 +13,8 @@ bool isdigit(char a);
 
 double strtodoub(string s);
 
+void parseFileName(string s, string &path, string &name, string &ext);
+
 vector <string> split(string s, string chars);
 
 int strtoint(string s);
