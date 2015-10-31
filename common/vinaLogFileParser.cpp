@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "commonFuncs.h"
-#include "commonFuncs.cpp"
 #include "vinaLogFileParser.h"
 
 using namespace std;
