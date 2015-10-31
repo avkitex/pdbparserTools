@@ -12,10 +12,8 @@
 #include <ctime>
 
 #include "../common/vinaLogFileParser.h"
-#include "../common/vinaLogFileParser.cpp"
-
 #include "../common/pdbqtFileStringsRW.h"
-#include "../common/pdbqtFileStringsRW.cpp"
+#include "../common/commonFuncs.h"
 
 #define VERSION "1.0"
 
