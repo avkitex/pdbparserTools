@@ -39,7 +39,9 @@ multipdbqtFileStringsReader::multipdbqtFileStringsReader(string file, int skipSt
 			skipStr--;
 		}
 	}
-	cout << "Skipped " << modelsReturned << "\n";
+	if (modelsReturned){
+		cout << "Skipped " << modelsReturned << "\n";
+	}
 }
 
 void multipdbqtFileStringsReader::getNextPdbqt(pdbqtFileStrings &file){
@@ -49,7 +51,7 @@ void multipdbqtFileStringsReader::getNextPdbqt(pdbqtFileStrings &file){
 		if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
 			if (file.size()){
 				modelsReturned++;
-				cout << "Returning file " << file.name << "\n";
+				//cout << "Returning file " << file.name << "\n";
 				return;
 			}
 		}
