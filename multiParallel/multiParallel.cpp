@@ -14,6 +14,7 @@
 #include "../common/commonFuncs.h"
 #include "../common/vinaLogFileParser.h"
 #include "../common/pdbqtFileStringsRW.h"
+#include "../common/logger/logs.h"
 
 #define VERSION "1.0"
 
@@ -123,6 +124,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+
 		cout << "Wrong amount of arguments\n";
 		help(argv[0]);
 		exit(0);
