@@ -21,11 +21,11 @@ void elementsRepo::readDatFile(){
     string s, element;
     double val;
     vector <string> splitedStr;
-
+	getline(din, s); //header
     while (getline(din, s)){
         splitedStr = split(s, "\t");
         element = toLowerCase(splitedStr[1]);
-        cout << element << " ";
+        //cout << element << " ";
         if (masses.count(element)){
             cerr << "Double " << element << " entry\n";
         } else {
@@ -42,7 +42,7 @@ double elementsRepo::getValue(string s){
     if (masses.count(s)){
         return masses[s];
     } else{
-        cerr << "No entry for " << s << "\n";
+        cerr << "No entry for |" << s << "|\n";
     }
     return 0;
 }
