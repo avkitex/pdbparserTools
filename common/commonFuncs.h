@@ -29,4 +29,6 @@ bool isLowerLetter(char a);
 
 string toLowerCase(string s);
 
+string getTime();
+
 #endif

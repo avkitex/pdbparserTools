@@ -181,3 +181,16 @@ string toLowerCase(string s)
 	}
 	return result;
 }
+
+
+string getTime()
+{
+	string res = "";
+	time_t ltm = time(0);
+	res += char*(1 + ltm->tm_hour);
+	res +=":";
+	res += char*(1 + ltm->tm_min);
+	res += ":";
+	res += char*(1 + ltm->tm_sec);
+	return res;
+}
