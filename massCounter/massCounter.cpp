@@ -11,7 +11,10 @@
 
 #include "elementsRepo/elementsRepo.h"
 
+#include "../common/logger/logs.h"
+
 #define VERSION "1.0"
+
 
 
 using namespace std;
@@ -52,8 +55,9 @@ double countMass(pdbqtFileStrings & ligand){
 int main(int argc, char ** argv)
 {
     string inputFile;
+    ParserToolsLogger::I()->setProgrammName("MassCounter");
     if (argc != 2){
-        cerr << "There must be pdbqt file specified\n";
+		log(ERROR_MSG, "Main", "Pdbqt file must be specified");
         help();
         exit(0);
     }
@@ -70,7 +74,6 @@ int main(int argc, char ** argv)
 		mout << file.name << "\t" << countMass(file) << "\n";
 		multipdbqtfile.getNextPdbqt(file);
     }
-    multipdbqtfile.close();
 	mout.close();
 	return 0;
 }

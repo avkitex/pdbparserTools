@@ -1,5 +1,6 @@
 #include "pdbqtFileStringsRW.h"
 #include "commonFuncs.h"
+#include "logger/logs.h"
 
 void pdbqtFileStrings::clear(){
 	strings.clear();
@@ -40,7 +41,7 @@ multipdbqtFileStringsReader::multipdbqtFileStringsReader(string file, int skipSt
 		}
 	}
 	if (modelsReturned){
-		cout << "Skipped " << modelsReturned << "\n";
+		log(NORMAL_LOG_MSG, "multipdbqtFileStringsReader", "Skipped " + modelsReturned);
 	}
 }
 
@@ -51,7 +52,7 @@ void multipdbqtFileStringsReader::getNextPdbqt(pdbqtFileStrings &file){
 		if (s.size() >5 && s.substr(0, 6) == "ENDMDL"){
 			if (file.size()){
 				modelsReturned++;
-				//cout << "Returning file " << file.name << "\n";
+				log(VERBOSE_LOG_MSG, "getNextPdbqt", "Returning file " + file.name);
 				return;
 			}
 		}
@@ -63,7 +64,8 @@ void multipdbqtFileStringsReader::getNextPdbqt(pdbqtFileStrings &file){
 		}
 		file.add(s);
 	}
-	cout << "Nothing more to read\n";
+	log(NORMAL_LOG_MSG, "getNextPdbqt", "Pdbqt file finished");
+	fileHandle.close();
 	return;
 }
 

@@ -7,6 +7,7 @@
 
 #include "elementsRepo.h"
 #include "../../common/commonFuncs.h"
+#include "../../common/logger/logs.h"
 
 using namespace std;
 
@@ -25,9 +26,10 @@ void elementsRepo::readDatFile(){
     while (getline(din, s)){
         splitedStr = split(s, "\t");
         element = toLowerCase(splitedStr[1]);
+        log(INFO_MSG, "readDatFile", element);
         //cout << element << " ";
         if (masses.count(element)){
-            cerr << "Double " << element << " entry\n";
+			log(ERROR_MSG, "readDatFile", "Double " + element + " entry");
         } else {
 			val = strtodoub(splitedStr[3]);
             masses[element] = val;
@@ -42,7 +44,8 @@ double elementsRepo::getValue(string s){
     if (masses.count(s)){
         return masses[s];
     } else{
-        cerr << "No entry for |" << s << "|\n";
+
+		log(ERROR_MSG, "getValue", "No entry for |" + s + "|\n");
     }
     return 0;
 }
