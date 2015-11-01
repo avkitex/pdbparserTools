@@ -11,7 +11,10 @@
 
 #include "elementsRepo/elementsRepo.h"
 
+#include "../common/logger/logs.h"
+
 #define VERSION "1.0"
+
 
 
 using namespace std;
@@ -24,7 +27,16 @@ void help(){
 }
 
 string getElementPdbqtStrings(string s){
-	return trim(s.substr(12, 2));
+//ATOM      1  C   UNK A  0       58.634  43.041  74.974  0.00  0.00    +0.600 C
+//ATOM     22 HD21 ASN A  1       61.505  44.535  78.193  0.00  0.00    +0.395 HD
+	string el = trim(s.substr(77, 2)), atom = trim(s.substr(12, 2)), res = "";
+	if (el.size() == 2 && isUpperLetter(el[1])){
+		res += atom[0];
+	}
+	else{
+		res += atom;
+	}
+	return res;
 }
 
 double countMass(pdbqtFileStrings & ligand){
@@ -43,8 +55,9 @@ double countMass(pdbqtFileStrings & ligand){
 int main(int argc, char ** argv)
 {
     string inputFile;
+    ParserToolsLogger::I()->setProgrammName("MassCounter");
     if (argc != 2){
-        cerr << "There must be pdbqt file specified\n";
+		log(ERROR_MSG, "Main", "Pdbqt file must be specified");
         help();
         exit(0);
     }
@@ -56,6 +69,7 @@ int main(int argc, char ** argv)
     pdbqtFileStrings file;
     multipdbqtFileStringsReader multipdbqtfile(inputFile, 0);
     multipdbqtfile.getNextPdbqt(file);
+    mout << "Ligand\tMass\n";
     while (file.size()){
 		mout << file.name << "\t" << countMass(file) << "\n";
 		multipdbqtfile.getNextPdbqt(file);

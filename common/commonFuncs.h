@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -28,5 +29,9 @@ bool isUpperLetter(char a);
 bool isLowerLetter(char a);
 
 string toLowerCase(string s);
+
+string getDate();
+
+string getTime();
 
 #endif

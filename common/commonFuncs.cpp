@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "commonFuncs.h"
 
 
@@ -180,4 +178,60 @@ string toLowerCase(string s)
 		}
 	}
 	return result;
+}
+
+string inttostr(int val){
+	string res = "";
+	bool minus = false;
+	if (val < 0){
+		minus = true;
+		val *= -1;
+	}
+	while (val > 0){
+		res += char(val % 10 + '0');
+		val /= 10;
+	}
+	if (minus){
+		res += '-';
+	}
+
+	reverse(res.begin(), res.end());
+	return res;
+}
+
+string getDate()
+{
+	time_t currentTime;
+	struct tm *localTime;
+
+	time( &currentTime );                   // Get the current time
+	localTime = localtime( &currentTime );  // Convert the current time to the local time
+
+	string res = "";
+	res += inttostr(localTime->tm_mday);
+	res += ':';
+	res += inttostr(localTime->tm_mon + 1);
+	res += ':';
+	res += inttostr(localTime->tm_year + 1900);
+
+	return res;
+}
+
+string getTime()
+{
+	time_t currentTime;
+	struct tm *localTime;
+
+	time( &currentTime );                   // Get the current time
+	localTime = localtime( &currentTime );  // Convert the current time to the local time
+
+	string res;
+
+	res += inttostr(localTime->tm_hour);
+	res += ':';
+	res += inttostr(localTime->tm_min);
+	res += ':';
+	res += inttostr(localTime->tm_sec);
+
+	return res;
 }
