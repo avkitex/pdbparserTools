@@ -9,18 +9,15 @@
 #define	ELEMENTSREPO_H
 
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <map>
 
 using namespace std;
 
-#define ELEMENTS_FILE "elements.dat"
-
 
 class elementsRepo {
 public:
-    void readDatFile();
+    void fillElementsRepo();
     double getValue(string s);
 
     static elementsRepo * Instanse() {

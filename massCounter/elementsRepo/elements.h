@@ -1,4 +1,7 @@
-void feelElementsDat(vector <string> & elementsDat)
+#ifndef ELEMENTDAT_H
+#define	ELEMENTDAT_H
+
+void fillElementsDat(vector <string> & elementsDat)
 {
 	elementsDat.clear();
 	elementsDat.push_back("Actinium	Ac	89	227.028");
@@ -111,3 +114,5 @@ void feelElementsDat(vector <string> & elementsDat)
 	elementsDat.push_back("Zinc	Zn	30	65.39");
 	elementsDat.push_back("Zirconium	Zr	40	91.224");
 }
+
+#endif	/* ELEMENTDAT_H */

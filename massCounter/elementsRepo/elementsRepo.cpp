@@ -8,35 +8,35 @@
 #include "elementsRepo.h"
 #include "../../common/commonFuncs.h"
 #include "../../common/logger/logs.h"
+#include "elements.h"
 
 using namespace std;
 
 
 
 elementsRepo::elementsRepo(){
-    readDatFile();
+    fillElementsRepo();
 }
-void elementsRepo::readDatFile(){
-    ifstream din (ELEMENTS_FILE);
+void elementsRepo::fillElementsRepo(){
+    vector<string> elementsDat;
+    fillElementsDat(elementsDat);
 
     string s, element;
     double val;
     vector <string> splitedStr;
-	getline(din, s); //header
-    while (getline(din, s)){
-        splitedStr = split(s, "\t");
+    for (int i = 0; i < elementsDat.size(); ++i)
+    {
+        splitedStr = split(elementsDat[i], "\t");
         element = toLowerCase(splitedStr[1]);
-        log(INFO_MSG, "readDatFile", element);
+        log(INFO_MSG, "fillElementsRepo", element);
         //cout << element << " ";
         if (masses.count(element)){
-			log(ERROR_MSG, "readDatFile", "Double " + element + " entry");
+			log(ERROR_MSG, "fillElementsRepo", "Double " + element + " entry");
         } else {
 			val = strtodoub(splitedStr[3]);
             masses[element] = val;
         }
     }
-
-    din.close();
 }
 
 double elementsRepo::getValue(string s){
@@ -49,8 +49,5 @@ double elementsRepo::getValue(string s){
     }
     return 0;
 }
-
-
-
 
 elementsRepo* elementsRepo::inst = 0;
