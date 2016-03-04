@@ -1,8 +1,15 @@
 #!/usr/bin/python
 
+# sudo apt-get update
+
+# sudo apt-get install rdkit rdkit-devel libfreetype6-dev
+# sudo pip install biopython
+
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+from Bio.Phylo.TreeConstruction import _DistanceMatrix
+from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 
 def iterMol2(file):
     handle = open(file, 'r')
@@ -26,15 +33,12 @@ def clusterMolecules(file):
     print(len(molecules))
     vects = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
     for mol1 in range(len(vects)):
-
-        simil.append(DataStructs.BulkTanimotoSimilarity(vects[mol1], vects[:mol1]))
-    return simil
-    #dm=_DistanceMatrix(['mol' + str(x) for x in range(99)], mols[1:])
-    # tree = constructor.nj(dm)
-    #constructor = DistanceTreeConstructor()
-    #from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
-    #from Bio.Phylo.TreeConstruction import _DistanceMatrix
-
+        simil.append(DataStructs.BulkTanimotoSimilarity(vects[mol1], vects[:mol1+1]))
+    dm =_DistanceMatrix(['mol' + str(x+1) for x in range(len(simil))], simil)
+    constructor = DistanceTreeConstructor()
+    tree = constructor.upgma(dm)
+    return tree
+#Bio.Phylo.draw(tree)
 def ClusterFps(fps,cutoff=0.2):
     from rdkit.ML.Cluster import Butina
 
