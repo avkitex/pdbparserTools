@@ -55,16 +55,18 @@ def getTrainingCompounds():
     names = []
     molecules = []
     for chsId in inhibitorsChsIds:
-        name = 'yes_' + str(chsId)
-        print(name)
         comp = cs.get_compound(chsId)
+        name = 'yes_' + str(chsId) + '_' + comp.common_name.encode('ascii','ignore')
+        #.replace('(', '_').replace(')', '_').replace('[', '_').replace(']', '_').replace(',', '_').replace(' ', '_').replace(';', '_')[:25]
+        print(name)
         smiles=comp.smiles.encode('ascii','ignore')
         molecules.append(Chem.MolFromSmiles(smiles))
         names.append(name)
     for chsId in notInhibitorsChsIds:
-        name = 'not_' + str(chsId)
-        print(name)
         comp = cs.get_compound(chsId)
+        name = 'not_' + str(chsId) + '_' + comp.common_name.encode('ascii','ignore')
+        #.replace('(', '_').replace(')', '_').replace('[', '_').replace(']', '_').replace(',', '_').replace(' ', '_').replace(';', '_')[:25]
+        print(name)
         smiles=comp.smiles.encode('ascii','ignore')
         molecules.append(Chem.MolFromSmiles(smiles))
         names.append(name)
@@ -77,12 +79,13 @@ def operate(inFile, outFile):
     molecules, names = readMolecules(inFile)
     tree = clusterMolecules(molecules, names)
     #draw(tree)
-    Phylo.write(tree, outFile, 'newick')
+    #Phylo.write(tree, outFile, 'newick')
 def operate_tr(outFile):
     molecules, names = getTrainingCompounds()
     tree = clusterMolecules(molecules, names)
     #draw(tree)
-    Phylo.write(tree, outFile, 'newick')
+    #Phylo.write(tree, outFile, 'newick')
+    Phylo.draw_ascii(tree)
 
 
 
@@ -99,3 +102,4 @@ def ClusterFps(fps,cutoff=0.2):
     # now cluster the data:
     cs = Butina.ClusterData(dists,nfps,cutoff,isDistData=True)
     return cs
+operate_tr('out.dnd')
