@@ -1,0 +1,315 @@
+yes_331_Salicylic acid
+yes_1353_4-[5-(4-Bromophenyl)-3-(trifluoromethyl)-1H-pyrazol-1-yl]benzenesulfonamide
+yes_1906_Paracetamol
+yes_2000_(3-Chloro-4-propoxyphenyl)acetic acid
+yes_2066_Ampyrone
+yes_2121_Phenazone
+yes_2157_Aspirin
+yes_2562_Celecoxib
+yes_2925_Diclofenac
+yes_3065_4-[5-bromo-2-(4-fluorophenyl)-3-thienyl]phenyl methyl sulfone
+yes_3097_5,8,11,14,17-Icosapentaenoic acid
+yes_3192_Etodolac
+yes_3225_Fenoprofen
+yes_3254_Flufenamic Acid
+yes_3544_Ibuprofen
+yes_3584_indometacin
+yes_3693_Ketoprofen
+yes_3694_Ketorolac
+yes_3897_meclofenamic acid
+yes_3904_Mefenamic acid
+yes_4339_Nimesulide
+yes_4393_NS-398
+yes_4480_1-(p-Hydroxyphenyl)-2-phenyl-4-butylpyrazolidine-3,5-dione
+yes_4617_Phenylbutazone
+yes_4911_Rofecoxib
+yes_5308_TOLMETIN
+yes_8711_D-(+)-Catechin
+yes_133236_Lumiracoxib
+yes_28714_Alclofenac
+yes_29843_(6-Methoxy-2-naphthyl)acetic acid
+yes_32983_2,2-Dichloro-N-phenylacetamide
+yes_33051_Pirprofen
+yes_34911_Flunixin
+yes_65084_(2S)-2-(2-Fluoro-4-biphenylyl)propanoic acid
+yes_110209_etoricoxib
+yes_137720_Naproxen
+yes_147913_(2R)-2-(6-Methoxy-2-naphthyl)propanoic acid
+yes_171462_(1S)-5-Cyclohexyl-1-indanecarboxylic acid
+yes_388601_D-()-Salicin
+yes_392692_Arachidonic acid
+yes_392977_N-Acetoxy-2-hydroxybenzamide
+yes_393569_Methyl (2S)-2-(2-fluoro-4-biphenylyl)propanoate
+yes_394812_(2S)-2-{4-[(5-Iodo-2-thienyl)carbonyl]phenyl}propanoic acid
+yes_394942_(2S)-2-(4-Biphenylyl)propanoic acid
+yes_581047_(S)-carprofen
+yes_8082544_3-(3-Fluorophenyl)-5,5-dimethyl-4-[4-(methylsulfonyl)phenyl]-2(5H)-furanone
+yes_1265915_Sulindac
+yes_2871682_flufenamate
+yes_3512137_5-(4-Chlorophenyl)-1-(4-methoxyphenyl)-3-(trifluoromethyl)-1H-pyrazole
+yes_4444105_Linoleic acid
+yes_4444112_Quercitrin
+yes_4445953_eicosa-8,11,14-trienoic acid
+yes_4510145_docosa-4,7,10,13,16,19-hexaenoic acid
+yes_5365258_(R)-carprofen
+yes_8081394_6-Chloro-7-(2-methyl-2-propanyl)-2-(trifluoromethyl)-2H-chromene-3-carboxylic acid
+yes_8098374_3-Methoxy-1,5-bis(4-methoxyphenyl)-1H-1,2,4-triazole
+yes_8443182_6,8-Dichloro-2-(trifluoromethyl)-2H-chromene-3-carboxylic acid
+yes_8530675_3-(5-Chloro-2-furyl)-5-methyl-4-phenyl-1,2-oxazole
+yes_9569918_6,8-Dichloro-7-isobutoxy-2-(trifluoromethyl)-2H-chromene-3-carboxylic acid
+yes_10442653_Piroxicam
+yes_10442740_Meloxicam
+yes_12951165_[2-(Benzyloxy)-5-methylphenyl]boronic acid
+yes_20572535_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2S)-1-hydroxy-2-butanyl]acetamide
+yes_21106585_Wurster's blue
+yes_23122887_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(1S)-2-hydroxy-1-phenylethyl]acetamide
+yes_23122889_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2S)-1-hydroxy-4-(methylsulfanyl)-2-butanyl]acetamide
+yes_23122978_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2S)-1-hydroxy-2-propanyl]acetamide
+yes_25057753_(2S)-2-[6-(Methylsulfanyl)-2-naphthyl]propanoic acid
+not_650_Dihydroxyacetone
+not_682_Ethanol
+not_733_Glycerol
+not_864_Methanol
+not_937_Water
+not_971_Phenol
+not_1116_DL-Tryptophan
+not_1512_mercaptoethanol
+not_2971_dimercaprol
+not_3350_gentisic acid
+not_5611_Epinephrine
+not_5653_L-(+)-Cysteine
+not_5764_D-(&minus;)-Fructose
+not_5768_Sucrose
+not_6170_tert-Butyl hydroperoxide
+not_6257_Tris(hydroxymethyl)aminomethane
+not_6312_isobutanol
+not_7742_Di-tert-butyl peroxide
+not_10610_(9alpha,11alpha,15S)-9,11,15-Trihydroxyprosta-5,13-dien-1-oic acid
+not_73505_Bis-tris methane
+not_83361_R-(-)-Flurbiprofen
+not_96749_D-(+)-Glucose
+not_111188_Glutathione
+not_120261_methyl peroxide
+not_216840_(+)-Epinephrine
+not_391555_3,6-Anhydro-1-O-[2-(dodecanoyloxy)ethyl]-2,4,5-tris-O-(2-hydroxyethyl)hexitol
+not_392800_Prostaglandin H2
+not_4576521_2,2'-azino-bis(3-ethylbenzthiazoline-6-sulphonic acid
+not_8257952_(2R)-2-(4-Biphenylyl)propanoic acid
+not_20572534_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2R)-1-hydroxy-2-butanyl]acetamide
+not_23122865_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(1R)-2-hydroxy-1-phenylethyl]acetamide
+not_23122927_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2R)-1-hydroxy-2-propanyl]acetamide
+not_23123076_2-[1-(4-Chlorobenzoyl)-5-methoxy-2-methyl-1H-indol-3-yl]-N-[(2R)-1-hydroxy-4-(methylsulfanyl)-2-butanyl]acetamide
+not_112728_Methotrexate
+not_10442445_Warfarin
+not_1710_phenytoin
+not_5304_Orinase
+  ______________ not_937_Water
+ |
+ |       __________ not_73505_Bis-tris methane
+ |     _|
+ |    | |__________ not_6257_Tris(hydroxymethyl)aminomethane
+ |    |
+ |    |      _______ not_96749_D-(+)-Glucose
+ |   _|  ___|
+ |  | | |   |_______ not_5764_D-(&minus;)-Fructose
+ |  | | |
+ |  | | |    ________ not_6312_isobutanol
+ |  | |_|  _|
+ |  |   |,| |________ not_733_Glycerol
+ |  |   |||
+ |  |   |||__________ not_682_Ethanol
+ |  |   ||
+ |  |    | __________ not_2971_dimercaprol
+ | _|    ||
+_|| |    ||__________ not_1512_mercaptoethanol
+ || |     |
+ || |     |__________ not_650_Dihydroxyacetone
+ || |
+ || |  ___________ not_112728_Methotrexate
+ || |,|
+ || |||    _______ not_111188_Glutathione
+ || |||___|
+ || ||    |_______ not_5653_L-(+)-Cysteine
+ || ||
+ ||  | ___________ not_391555_3,6-Anhydro-1-O-[2-(dodeca...
+ ||  ||
+ ||  ||              ___ not_392800_Prostaglandin H2
+ ||  ||        _____|
+ ||   |       |     |___ not_10610_(9alpha,11alpha,15S)-9,11,1...
+ ||   |       |
+ ||   |_______|           , yes_4445953_eicosa-8,11,14-trienoic acid
+ ||           |          _|
+ ||           |      ___| | yes_4444105_Linoleic acid
+  |           |     |   |
+  |           |_____|   |_ yes_392692_Arachidonic acid
+  |                 |
+  |                 |  ___ yes_4510145_docosa-4,7,10,13,16,19-he...
+  |                 |_|
+  |                   |___ yes_3097_5,8,11,14,17-Icosapentaenoic...
+  |
+  |  ____________ not_120261_methyl peroxide
+  | |
+  | |    ________ not_7742_Di-tert-butyl peroxide
+  |_|___|
+  | |   |________ not_6170_tert-Butyl hydroperoxide
+  | |
+  | |____________ not_864_Methanol
+  |
+  | _____________ yes_21106585_Wurster's blue
+  ||
+  ||       ________ not_5768_Sucrose
+  ||   ___|
+  ||  |   |________ yes_388601_D-()-Salicin
+  ||  |
+  || _|             , not_216840_(+)-Epinephrine
+  ||| |  ___________|
+  ||| | |           | not_5611_Epinephrine
+  ||| |_|
+  |||   |___________ yes_4444112_Quercitrin
+  |||   |
+   ||   |___________ yes_8711_D-(+)-Catechin
+   ||
+   ||          ______ yes_4393_NS-398
+   ||    _____|
+   ||   |     |______ yes_4339_Nimesulide
+   ||   |
+   ||  _|  ___________ not_5304_Orinase
+   || | |,|
+   || | |||___________ not_4576521_2,2'-azino-bis(3-ethylben...
+   || | ||
+   || | ||    ________ yes_8082544_3-(3-Fluorophenyl)-5,5-di...
+   || |  |  ,|
+    |,|  |  ||________ yes_4911_Rofecoxib
+    |||  |__|
+    |||     | ________ yes_110209_etoricoxib
+    |||     ||
+    |||      |________ yes_3065_4-[5-bromo-2-(4-fluorophenyl...
+    |||
+    |||    _________ yes_8098374_3-Methoxy-1,5-bis(4-metho...
+    |||___|
+    ||    |  _______ yes_3512137_5-(4-Chlorophenyl)-1-(4-m...
+    ||    |_|
+    ||      |     __ yes_2562_Celecoxib
+    ||      |____|
+    ||           |__ yes_1353_4-[5-(4-Bromophenyl)-3-(trif...
+    ||
+    || ____________ yes_8530675_3-(5-Chloro-2-furyl)-5-me...
+    |||
+    |||           _____ yes_10442740_Meloxicam
+     ,|     _____|
+     ||    |     |_____ yes_10442653_Piroxicam
+     ||    |
+     ||____|            __ yes_4617_Phenylbutazone
+     |     |    _______|
+     |     |   |       |__ yes_4480_1-(p-Hydroxyphenyl)-2-phenyl...
+     |     |___|
+     |         |   _______ yes_2121_Phenazone
+     |         |__|
+     |            |_______ yes_2066_Ampyrone
+     |
+     |        _____ yes_9569918_6,8-Dichloro-7-isobutoxy-...
+     |      ,|
+     | _____||_____ yes_8443182_6,8-Dichloro-2-(trifluoro...
+     ||     |
+     ||     |______ yes_8081394_6-Chloro-7-(2-methyl-2-pr...
+     ||
+     ||    _________ yes_394812_(2S)-2-{4-[(5-Iodo-2-thien...
+     ||   |
+     ||   |          , yes_5365258_(R)-carprofen
+     ||   |  ________|
+     ||  _|,|        | yes_581047_(S)-carprofen
+     || | |||
+     || | |||________ yes_33051_Pirprofen
+     || | ||
+     || | ||        ___ yes_393569_Methyl (2S)-2-(2-fluoro-4-...
+     || | ||   ____|
+     || |  |  |    |   , not_83361_R-(-)-Flurbiprofen
+     || |  |  |    |___|
+     || |  |  |        | yes_65084_(2S)-2-(2-Fluoro-4-biphenyl...
+     || |  |  |
+     || |  |__|          , not_8257952_(2R)-2-(4-Biphenylyl)prop...
+     || |     |    ______|
+      | |     |  _|      | yes_394942_(2S)-2-(4-Biphenylyl)propa...
+      | |     | | |
+      |,|     | | |______ yes_3544_Ibuprofen
+      |||     | |
+      |||     |_|     _____ yes_25057753_(2S)-2-[6-(Methylsulfany...
+      |||       |  __|
+      |||       | |  |     , yes_147913_(2R)-2-(6-Methoxy-2-naphth...
+      |||       | |  |_____|
+      |||       |_|        | yes_137720_Naproxen
+      |||         |
+      |||         |  ______ yes_3693_Ketoprofen
+      |||         |_|
+      |||           |______ yes_3225_Fenoprofen
+      |||
+      ||| __________ not_10442445_Warfarin
+      ||,|
+      ||||__________ not_1116_DL-Tryptophan
+      |||
+      |||___________ yes_3192_Etodolac
+       |
+       | ___________ yes_171462_(1S)-5-Cyclohexyl-1-indane...
+       ||
+       || __________ yes_5308_TOLMETIN
+       |||
+       |||__________ yes_3694_Ketorolac
+       ||
+       ||____________ yes_1265915_Sulindac
+       ||
+       ||                  , not_23122865_2-[1-(4-Chlorobenzoyl)-5...
+       ||               ___|
+       ||              |   | yes_23122887_2-[1-(4-Chlorobenzoyl)-5...
+       ||              |
+       ||          ____|      , not_23123076_2-[1-(4-Chlorobenzoyl)-5...
+       ||         |    |    __|
+       ||         |    |   |  | yes_23122889_2-[1-(4-Chlorobenzoyl)-5...
+       ||         |    |   |
+        |         |    |___|     , not_23122927_2-[1-(4-Chlorobenzoyl)-5...
+        |         |        |   __|
+        |    _____|        |  |  | yes_23122978_2-[1-(4-Chlorobenzoyl)-5...
+        |   |     |        |__|
+        |   |     |           |  , not_20572534_2-[1-(4-Chlorobenzoyl)-5...
+        |   |     |           |__|
+        |___|     |              | yes_20572535_2-[1-(4-Chlorobenzoyl)-5...
+        |   |     |
+        |   |     |____ yes_3584_indometacin
+        |   |
+        |   |  ________ yes_29843_(6-Methoxy-2-naphthyl)aceti...
+        |   |_|
+        |     |   _____ yes_28714_Alclofenac
+        |     |__|
+        |        |_____ yes_2000_(3-Chloro-4-propoxyphenyl)ac...
+        |
+        |     _________ yes_34911_Flunixin
+        |    |
+        |    |   ______ yes_3904_Mefenamic acid
+        |    |__|
+        |   _|  |______ yes_3897_meclofenamic acid
+        |  | |
+        |  | |      ___ yes_2871682_flufenamate
+        |__| |_____|
+        |  |       |___ yes_3254_Flufenamic Acid
+        |  |
+        |  |     _____ yes_133236_Lumiracoxib
+        |  |____|
+        |       |_____ yes_2925_Diclofenac
+        |
+        | ___________ yes_12951165_[2-(Benzyloxy)-5-methylp...
+        ||
+        ||   _________ not_1710_phenytoin
+        || ,|
+         | ||_________ not_971_Phenol
+         | |
+         |_|  _________ yes_32983_2,2-Dichloro-N-phenylacetamide
+           |,|
+           |||_________ yes_1906_Paracetamol
+           ||
+           ||  ________ yes_392977_N-Acetoxy-2-hydroxybenzamide
+            | |
+            | |________ yes_2157_Aspirin
+            |_|
+              |   _____ not_3350_gentisic acid
+              |__|
+                 |_____ yes_331_Salicylic acid
+
