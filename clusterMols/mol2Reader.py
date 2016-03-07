@@ -73,8 +73,18 @@ def getTrainingCompounds():
     return molecules, names
 
 
-
-
+def similarityMatrixToTree(inFile):
+    handle = open(inFile)
+    amount = int(handle.next().strip())
+    names = handle.next().strip().split()
+    simil = []
+    for line in handle:
+        simil.append([float(x) for x in line.strip().split()])
+    dm =_DistanceMatrix(names, simil)
+    constructor = DistanceTreeConstructor()
+    tree = constructor.upgma(dm)
+    draw(tree)
+    return tree
 def operate(inFile, outFile):
     molecules, names = readMolecules(inFile)
     tree = clusterMolecules(molecules, names)
@@ -102,4 +112,4 @@ def ClusterFps(fps,cutoff=0.2):
     # now cluster the data:
     cs = Butina.ClusterData(dists,nfps,cutoff,isDistData=True)
     return cs
-operate_tr('out.dnd')
+#operate_tr('out.dnd')
