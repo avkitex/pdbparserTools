@@ -2,8 +2,8 @@
 
 # sudo apt-get update
 
-# sudo apt-get install rdkit rdkit-devel libfreetype6-dev
-# sudo pip install biopython
+# sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev
+# sudo pip install biopython chemspipy
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -13,20 +13,9 @@ from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
 from Bio.Phylo import draw
 
-def iterMol2(file):
-    handle = open(file, 'r')
-    if handle:
-        curMol2 = []
-        for line in handle:
-            if '@<TRIPOS>MOLECULE' in line:
-                if len(curMol2):
-                    yield curMol2
-                    curMol2 = []
-            curMol2.append(line)
-        if len(curMol2):
-            yield curMol2
-        handle.close()
-def readMolecules(file):
+from ..common.f import iterMol2
+
+def readMoleculesRd(file):
     molecules=[]
     names=[]
     for lines in iterMol2(file):
@@ -86,7 +75,7 @@ def similarityMatrixToTree(inFile):
     draw(tree)
     return tree
 def operate(inFile, outFile):
-    molecules, names = readMolecules(inFile)
+    molecules, names = readMoleculesRd(inFile)
     tree = clusterMolecules(molecules, names)
     #draw(tree)
     #Phylo.write(tree, outFile, 'newick')
