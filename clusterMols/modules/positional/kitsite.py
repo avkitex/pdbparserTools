@@ -5,31 +5,16 @@ import math
 from ..common.f import iterMol2
 from rdkit.DataStructs.cDataStructs import SparseBitVect
 
-############################ PARAMS #####################################
-protinFile='3NTB_D.mol2'
-outFile='res.xyz'
-boxOutFile = 'box.xyz'
-
-asCenterX = -26.9
-asCenterY = 21.9
-asCenterZ = -76.9
-
-maxBondLen = 3.5
-bondClusterLen = 3.5
-
-gridSizeX = 30
-gridSizeY = 30
-gridSizeZ = 30
-
-stepSize = 0.5
-minCavSize = 5
-topAtoms = 250
-
-cornerPenalty = 10
-############################ PARAMS #####################################
-
 
 ############################ CONSTATNTS #################################
+defaultTopAtomsPersent = 17
+minCavSize = 3.5
+defaultStepSize = 0.5
+bondLenBoxExtend = 0
+bondLenClustering = 3.5
+cornerPenalty = 12
+
+
 redius = {}
 redius['H'] = 1.2
 redius['C'] = 1.7
@@ -81,7 +66,7 @@ class boxParams():
 		for atom in self.atoms:
 			atom.aprint(outH)
 		outH.close()
-	def getActiveSiteAtomsX(self, step = stepSize, cavSize = minCavSize):
+	def getActiveSiteAtomsX(self, step = defaultStepSize, minCavSize = minCavSize):
 		self.atoms.sort(key=lambda atom: atom.x)
 		ycoord = self.miny
 		while ycoord < self.maxy:
@@ -118,7 +103,7 @@ class boxParams():
 				xcoord -= step
 
 			ycoord += step
-	def getActiveSiteAtomsY(self, step = stepSize, cavSize = minCavSize):
+	def getActiveSiteAtomsY(self, step = defaultStepSize, cavSize = minCavSize):
 		self.atoms.sort(key=lambda atom: atom.y)
 		zcoord = self.minz
 		while zcoord < self.maxz:
@@ -157,7 +142,7 @@ class boxParams():
 				self.atoms[prevAtom].score -= cornerPenalty
 
 			zcoord += step
-	def getActiveSiteAtomsZ(self, step = stepSize, cavSize = minCavSize):
+	def getActiveSiteAtomsZ(self, step = defaultStepSize, cavSize = minCavSize):
 		self.atoms.sort(key=lambda atom: atom.z)
 		xcoord = self.minx
 		while xcoord < self.maxx:
@@ -196,14 +181,15 @@ class boxParams():
 				self.atoms[prevAtom].score -= cornerPenalty
 
 			xcoord += step
-	def getActiveSiteAtoms(self, step = stepSize, cavSize = minCavSize, topAtoms = topAtoms):
-		self.getActiveSiteAtomsX()
-		self.getActiveSiteAtomsY()
-		self.getActiveSiteAtomsZ()
+	def getActiveSiteAtoms(self, step = defaultStepSize, cavSize = minCavSize, topAtomsPersent = defaultTopAtomsPersent):
+		self.getActiveSiteAtomsX(step = step)
+		self.getActiveSiteAtomsY(step = step)
+		self.getActiveSiteAtomsZ(step = step)
 		self.atoms.sort(key=lambda atom: atom.score, reverse=True)
-		for atom in self.atoms[:topAtoms]:
-			print(atom.atom, atom.serial, atom.score, sep = ':')
-		return sorted(self.atoms[:topAtoms], key=lambda atom: atom.serial)
+		atomsAmount=topAtomsPersent*len(self.atoms)//100
+		#for atom in self.atoms[:atomsAmount]:
+		#	print(atom.atom, atom.serial, atom.score, sep = ':')
+		return sorted(self.atoms[:atomsAmount], key=lambda atom: atom.serial)
 		# for atom in self.atoms:
 			# print(atom.atom, atom.serial, atom.score, sep = ':', end = ',')
 			# if atom.score > treshold:
@@ -284,11 +270,11 @@ class singleMolecule():
 def atomFromMol2String(mol2String):
 	items = mol2String.strip().split()
 	try:
-		return atom(int(items[0]), items[1], float(items[2]), float(items[3]), float(items[4]), items[5], int(items[6]), items[7], float(items[8]), curStr)
+		return atom(int(items[0]), items[1], float(items[2]), float(items[3]), float(items[4]), items[5], int(items[6]), items[7], float(items[8]), mol2String)
 	except Exception as e:
 		print('Problems with atom. ', str(e))
 		return None
-def readProtein(protinFile):
+def readMol2ProteinMolecule(protinFile):
 	protH = open(protinFile)
 	proteinAtoms = []
 	curStr = protH.next()
@@ -305,21 +291,20 @@ def readProtein(protinFile):
 	protH.close()
 	return proteinAtoms
 
-############################################# params adopting ############################
-gridSize = point3D(gridSizeX + maxBondLen, gridSizeY + maxBondLen, gridSizeZ + maxBondLen)
-centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
-box = boxParams(centerCoords, gridSize)
-############################################# params adopting ############################
+
 ############################################# main #######################################
-def filterBoxAtoms(protInFile, box):
-	pAtoms = readProtein(protInFile)
-	print(len(pAtoms))
+def filterBoxAtoms(protInFile, box, step, topAtomsPersent = defaultTopAtomsPersent):
+	pAtoms = readMol2ProteinMolecule(protInFile)
+	print('Total protein atoms:', len(pAtoms))
 	box.extractAtoms(pAtoms)
 	if len(box.atoms) < 10:
 		print('There are too little atoms in box! Check active site center or box size!')
-	print(len(box.atoms))
-	box.outBox(boxOutFile)
-	return box.getActiveSiteAtoms()
+	print('Box atoms:', len(box.atoms))
+	#box.outBox(boxOutFile)
+	activeSiteAtoms = box.getActiveSiteAtoms(topAtomsPersent = topAtomsPersent)
+	print('Active site atoms: ' + str(len(activeSiteAtoms)) +  ', (' + str(topAtomsPersent) + '%)')
+	return activeSiteAtoms
+
 
 	#outfH = open(outFile, 'w')
 	#print(len(pickedX), file=outfH)
@@ -328,27 +313,34 @@ def filterBoxAtoms(protInFile, box):
 	#	print(atom.atom, atom.x, atom.y, atom.z, sep='\t', file=outfH)
 	#outfH.close()
 
-def getContactsAsBitVec(molecule, filteredBoxAtoms, contact = bondClusterLen):
+def getContactsAsBitVec(molecule, filteredBoxAtoms, contact = bondLenClustering):
 	bv = SparseBitVect(len(filteredBoxAtoms))
 	for atomNum in range(len(filteredBoxAtoms)):
 		if molecule.minx - contact  <= filteredBoxAtoms[atomNum].x <= molecule.maxx + contact and \
 		   molecule.miny - contact <= filteredBoxAtoms[atomNum].y <= molecule.maxy + contact and \
 		   molecule.minz - contact <= filteredBoxAtoms[atomNum].z <= molecule.maxz + contact:
 			if molecule.minDist(filteredBoxAtoms[atomNum]) < contact:
-				bv.set(atomNum)
+				bv.SetBit(atomNum)
 	return bv
 
 
 def getMoleculesContactsAsBitVect(file, filteredBoxAtoms):
 	filteredBoxAtoms.sort(key=lambda atom: (atom.x, atom.y, atom.z))
-	contactsBV = {}
+	contactsBV = []
+	names = []
 	for lines in iterMol2(file):
-		name = lines[1]
+		name = lines[1].strip()
 		atoms = []
-		for line in lines:
-			atom = atomFromMol2String(curStr)
+		curline = 0
+		while curline < len(lines) and "@<TRIPOS>ATOM" not in lines[curline]: #skipping info section
+			curline += 1
+		curline += 1
+		while curline < len(lines) and "@<TRIPOS>BOND" not in lines[curline]: # reading all atoms till to bonds section
+			atom = atomFromMol2String(lines[curline])
 			if atom:
 				atoms.append(atom)
-		contactsBV[name] = getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms)
+			curline += 1
+		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms))
+		names.append(name)
 
-	return contactsBV
+	return contactsBV, names
