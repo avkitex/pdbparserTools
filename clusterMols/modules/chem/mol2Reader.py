@@ -1,9 +1,4 @@
-#!/usr/bin/python
 
-# sudo apt-get update
-
-# sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev
-# sudo pip install biopython chemspipy
 
 from rdkit import Chem
 from rdkit.Chem import AllChem

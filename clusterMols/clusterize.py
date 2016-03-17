@@ -1,3 +1,11 @@
+#!/usr/bin/python
+
+# sudo apt-get update
+
+# sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
+# sudo pip install biopython chemspipy pylab
+
+
 
 from datetime import datetime
 from rdkit import Chem
@@ -8,6 +16,7 @@ from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio import Phylo
 from Bio.Phylo import draw
+import pylab
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
@@ -35,11 +44,21 @@ def appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames):
                 newVectors.append(appendBitVectors(chemVectors[cname], boxVectors[bname]))
                 break
     return newVectors, newNames
-
-print("[" + getFormatedTime() + "]Downloading ideal training molecules for chemical clustering")
+def clusterBitVectors(vectors, names):
+	simil = []
+	for mol1 in range(len(bothVectors)):
+	    simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bothVectors[mol1], bothVectors[:mol1+1])])
+	dm =_DistanceMatrix(bothNames, simil)
+	constructor = DistanceTreeConstructor()
+	tree = constructor.upgma(dm)
+	#Phylo.draw_ascii(tree)
+	Phylo.draw_graphviz(tree)
+	pylab.show()
+	return tree
+print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
 
 chemMolecules, chemNames = getTrainingCompounds()
-print("[" + getFormatedTime() + "]Obtaining bit vectors representation")
+print(getFormatedTime() + " Obtaining bit vectors representation")
 chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
 
 
@@ -71,20 +90,14 @@ centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
 box = boxParams(centerCoords, gridSize)
 ############################################# params adopting ############################
 
-print("[" + getFormatedTime() + "]Getting protein grid box and filtering active site atoms")
+print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
 
 filteredBox=filterBoxAtoms('3NTB_D.mol2', box, stepSize, topAtomsPersent)
-print("[" + getFormatedTime() + "]Getting bit vector representation")
+print(getFormatedTime() + " Getting bit vector representation")
 boxVectors, boxNames = getMoleculesContactsAsBitVect('../../training/training_bp.mol2', filteredBox)
 
-print("[" + getFormatedTime() + "]Composing bit vectors")
+print(getFormatedTime() + " Composing bit vectors")
 bothVectors, bothNames = appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames)
 
-print("[" + getFormatedTime() + "]Final tree")
-simil = []
-for mol1 in range(len(bothVectors)):
-    simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bothVectors[mol1], bothVectors[:mol1+1])])
-dm =_DistanceMatrix(bothNames, simil)
-constructor = DistanceTreeConstructor()
-tree = constructor.upgma(dm)
-Phylo.draw_ascii(tree)
+print(getFormatedTime() + " Final tree")
+#clusterBitVectors(bothVectors, bothNames)
