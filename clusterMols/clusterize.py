@@ -51,9 +51,9 @@ def clusterBitVectors(vectors, names):
 	dm =_DistanceMatrix(bothNames, simil)
 	constructor = DistanceTreeConstructor()
 	tree = constructor.upgma(dm)
-	#Phylo.draw_ascii(tree)
-	Phylo.draw_graphviz(tree)
-	pylab.show()
+	Phylo.draw_ascii(tree)
+	#Phylo.draw_graphviz(tree)
+	#pylab.show()
 	return tree
 print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
 
@@ -71,7 +71,7 @@ asCenterY = 21.9
 asCenterZ = -76.9
 
 bondLenBoxExtend = 0
-bondLenClustering = 3.5
+bondLenClustering = 4.5
 
 gridSizeX = 30
 gridSizeY = 30
@@ -79,7 +79,7 @@ gridSizeZ = 30
 
 stepSize = 0.5
 minCavSize = 5
-topAtomsPersent = 20
+topAtomsPersent = 2
 
 cornerPenalty = 10
 ############################ PARAMS #####################################
@@ -94,10 +94,10 @@ print(getFormatedTime() + " Getting protein grid box and filtering active site a
 
 filteredBox=filterBoxAtoms('3NTB_D.mol2', box, stepSize, topAtomsPersent)
 print(getFormatedTime() + " Getting bit vector representation")
-boxVectors, boxNames = getMoleculesContactsAsBitVect('../../training/training_bp.mol2', filteredBox)
+boxVectors, boxNames = getMoleculesContactsAsBitVect('../../training/training_bp.mol2', filteredBox, bondLenClustering)
 
 print(getFormatedTime() + " Composing bit vectors")
 bothVectors, bothNames = appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames)
 
 print(getFormatedTime() + " Final tree")
-#clusterBitVectors(bothVectors, bothNames)
+clusterBitVectors(bothVectors, bothNames)

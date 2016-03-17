@@ -324,7 +324,7 @@ def getContactsAsBitVec(molecule, filteredBoxAtoms, contact = bondLenClustering)
 	return bv
 
 
-def getMoleculesContactsAsBitVect(file, filteredBoxAtoms):
+def getMoleculesContactsAsBitVect(file, filteredBoxAtoms, distance):
 	filteredBoxAtoms.sort(key=lambda atom: (atom.x, atom.y, atom.z))
 	contactsBV = []
 	names = []
@@ -340,7 +340,7 @@ def getMoleculesContactsAsBitVect(file, filteredBoxAtoms):
 			if atom:
 				atoms.append(atom)
 			curline += 1
-		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms))
+		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms, distance))
 		names.append(name)
 
 	return contactsBV, names
