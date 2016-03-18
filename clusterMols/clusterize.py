@@ -55,16 +55,16 @@ def clusterBitVectors(vectors, names):
 	#Phylo.draw_graphviz(tree)
 	#pylab.show()
 	return tree
-print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
-
-chemMolecules, chemNames = getTrainingCompounds()
-print(getFormatedTime() + " Obtaining bit vectors representation")
-chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
 
 
 
 ############################ PARAMS #####################################
 protinFile='3NTB_D.mol2'
+trainingLigandsDocked='training_bp.mol2'
+
+inhibitorsChsIds=[331, 1353, 1906, 2000, 2066, 2121, 2157, 2562, 2925, 3065, 3097, 3192, 3225, 3254, 3544, 3584, 3693, 3694, 3897, 3904, 4339, 4393, 4480, 4617, 4911, 5308, 8711, 133236, 28714, 29843, 32983, 33051, 34911, 65084, 110209, 137720, 147913, 171462, 388601, 392692, 392977, 393569, 394812, 394942, 581047, 8082544, 1265915, 2871682, 3512137, 4444105, 4444112, 4445953, 4510145, 5365258, 8081394, 8098374, 8443182, 8530675, 9569918, 10442653, 10442740, 12951165, 20572535, 21106585, 23122887, 23122889, 23122978, 25057753]
+notInhibitorsChsIds=[650, 682, 733, 864, 937, 971, 1116, 1512, 2971, 3350, 5611, 5653, 5764, 5768, 6170, 6257, 6312, 7742, 10610, 73505, 83361, 96749, 111188, 120261, 216840, 391555, 392800, 4576521, 8257952, 20572534, 23122865, 23122927, 23123076, 112728, 10442445, 1710, 5304]
+
 
 asCenterX = -26.9
 asCenterY = 21.9
@@ -84,6 +84,13 @@ topAtomsPersent = 2
 cornerPenalty = 10
 ############################ PARAMS #####################################
 
+print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
+
+chemMolecules, chemNames = getTrainingCompounds(inhibitorsChsIds, notInhibitorsChsIds)
+print(getFormatedTime() + " Obtaining bit vectors representation")
+chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
+
+
 ############################################# params adopting ############################
 gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, gridSizeZ + bondLenBoxExtend)
 centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
@@ -92,9 +99,9 @@ box = boxParams(centerCoords, gridSize)
 
 print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
 
-filteredBox=filterBoxAtoms('3NTB_D.mol2', box, stepSize, topAtomsPersent)
+filteredBox=filterBoxAtoms(protinFile, box, stepSize, topAtomsPersent)
 print(getFormatedTime() + " Getting bit vector representation")
-boxVectors, boxNames = getMoleculesContactsAsBitVect('../../training/training_bp.mol2', filteredBox, bondLenClustering)
+boxVectors, boxNames = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
 
 print(getFormatedTime() + " Composing bit vectors")
 bothVectors, bothNames = appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames)
