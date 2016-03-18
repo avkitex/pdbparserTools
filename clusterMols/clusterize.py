@@ -61,7 +61,7 @@ def drawTree(tree):
 	Phylo.draw_ascii(tree)
 	#Phylo.draw_graphviz(tree)
 	#pylab.show()
-def genTreeBitVectors(vectors, names):
+def genTreeBitVectors(names, vectors):
 	dm = getDistanceMatrix(vectors, names)
 	tree = distanceMatrixToTree(dm, True)
 	drawTree(tree)
@@ -86,7 +86,7 @@ def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
 	bothVectors, bothNames = appendChemBoxBitVectors(namesC, vectorsC, namesD, vectorsD)
 
 	print(getFormatedTime() + " Final tree")
-	genTreeBitVectors(bothVectors, bothNames)
+	genTreeBitVectors(bothNames, bothVectors)
 
 ############################ PARAMS #####################################
 protinFile='3NTB_D.mol2'
@@ -124,4 +124,9 @@ box = boxParams(centerCoords, gridSize)
 
 namesD, vectorsD = getDistanceVectors()
 ############################################# BOTH ############################
+
+print(getFormatedTime() + " Chem tree")
+genTreeBitVectors(namesC, vectorsC)
+print(getFormatedTime() + " Dist tree")
+genTreeBitVectors(namesD, vectorsD)
 composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD)
