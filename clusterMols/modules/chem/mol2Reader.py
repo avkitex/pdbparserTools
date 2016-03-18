@@ -1,8 +1,11 @@
+import string
 
+from chemspipy import ChemSpider
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
@@ -31,30 +34,39 @@ def clusterMolecules(molecules, names):
     return tree
 #Bio.Phylo.draw(tree)
 
-def getTrainingCompounds(inhibitorsChsIds=[], notInhibitorsChsIds=[], longNames = True):
-    from chemspipy import ChemSpider
-    cs = ChemSpider('2228d430-a955-416b-b920-14547d28df9e')
+def leftOnlyLettersDigits(sn):
+    res = ''
+    for let in sn:
+        if let in string.ascii_letters + string.digits + ['_', '|', '-']:
+            res += let
+    return let
+
+def getChemspiderCompounds(token, list, pref, delim = '_', longNames = True, onlyLettersDigits = False):
+    cs = ChemSpider(token)
     names = []
     molecules = []
-    for chsId in inhibitorsChsIds:
+    for chsId in list:
         comp = cs.get_compound(chsId)
-        name = 'yes_' + str(chsId)
+        name = pref + delim + str(chsId)
         if longNames:
-            name += '_' + comp.common_name.encode('ascii','ignore')
-        #.replace('(', '_').replace(')', '_').replace('[', '_').replace(']', '_').replace(',', '_').replace(' ', '_').replace(';', '_')[:25]
-        print(name)
-        smiles=comp.smiles.encode('ascii','ignore')
-        molecules.append(Chem.MolFromSmiles(smiles))
-        names.append(name)
-    for chsId in notInhibitorsChsIds:
-        comp = cs.get_compound(chsId)
-        name = 'not_' + str(chsId) + '_' + comp.common_name.encode('ascii','ignore')
+            name += delim
+            sn = comp.common_name.encode('ascii','ignore')
+            if onlyLettersDigits:
+                sn = leftOnlyLettersDigits(sn)
+            name += sn
         #.replace('(', '_').replace(')', '_').replace('[', '_').replace(']', '_').replace(',', '_').replace(' ', '_').replace(';', '_')[:25]
         print(name)
         smiles=comp.smiles.encode('ascii','ignore')
         molecules.append(Chem.MolFromSmiles(smiles))
         names.append(name)
     return molecules, names
+
+def getTrainingCompounds(inhibitorsChsIds=[], notInhibitorsChsIds=[], longNames = True, onlyLettersDigits = False, token = '2228d430-a955-416b-b920-14547d28df9e'):
+
+    moleculesY, namesY = getChemspiderCompounds(token, inhibitorsChsIds, 'yes', '_', longNames, onlyLettersDigits)
+
+    moleculesN, namesN = getChemspiderCompounds(token, notInhibitorsChsIds, 'not', '_', longNames, onlyLettersDigits)
+    return moleculesY + moleculesN, namesY + namesN
 
 
 # def similarityMatrixToTree(inFile):
