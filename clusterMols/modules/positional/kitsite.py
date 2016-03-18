@@ -66,7 +66,7 @@ class boxParams():
 		for atom in self.atoms:
 			atom.aprint(outH)
 		outH.close()
-	def getActiveSiteAtomsX(self, step = defaultStepSize, minCavSize = minCavSize):
+	def getActiveSiteAtomsY(self, step, minCavSize):
 		self.atoms.sort(key=lambda atom: atom.x)
 		ycoord = self.miny
 		while ycoord < self.maxy:
@@ -85,7 +85,36 @@ class boxParams():
 						prevAtom = atomNum
 				self.atoms[prevAtom].score -= cornerPenalty
 				zcoord += step
-
+			prevAtom = -1
+			zcoord = self.maxz
+			while zcoord > self.minz:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineX(ycoord, zcoord):
+						if prevAtom >= 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				self.atoms[prevAtom].score -= cornerPenalty
+				zcoord -= step
+			prevAtom = -1
+			xcoord = self.minx
+			while xcoord < self.maxx:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineZ(xcoord, ycoord):
+						if prevAtom >= 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				self.atoms[prevAtom].score -= cornerPenalty
+				xcoord += step
 			prevAtom = -1
 			xcoord = self.maxx
 			while xcoord > self.minx:
@@ -103,7 +132,7 @@ class boxParams():
 				xcoord -= step
 
 			ycoord += step
-	def getActiveSiteAtomsY(self, step = defaultStepSize, cavSize = minCavSize):
+	def getActiveSiteAtomsZ(self, step, cavSize):
 		self.atoms.sort(key=lambda atom: atom.y)
 		zcoord = self.minz
 		while zcoord < self.maxz:
@@ -123,7 +152,38 @@ class boxParams():
 						prevAtom = atomNum
 				xcoord += step
 				self.atoms[prevAtom].score -= cornerPenalty
-
+			prevAtom = -1
+			xcoord = self.maxx
+			while xcoord > self.minx:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineY(xcoord, zcoord):
+						if prevAtom > 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							#print(dist)
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				xcoord -= step
+				self.atoms[prevAtom].score -= cornerPenalty
+			prevAtom = -1
+			ycoord = self.miny
+			while ycoord < self.maxy:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineX(ycoord, zcoord):
+						if prevAtom > 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							#print(dist)
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				ycoord += step
+				self.atoms[prevAtom].score -= cornerPenalty
 			prevAtom = -1
 			ycoord = self.maxy
 			while ycoord > self.miny:
@@ -142,7 +202,7 @@ class boxParams():
 				self.atoms[prevAtom].score -= cornerPenalty
 
 			zcoord += step
-	def getActiveSiteAtomsZ(self, step = defaultStepSize, cavSize = minCavSize):
+	def getActiveSiteAtomsX(self, step, cavSize):
 		self.atoms.sort(key=lambda atom: atom.z)
 		xcoord = self.minx
 		while xcoord < self.maxx:
@@ -162,7 +222,38 @@ class boxParams():
 						prevAtom = atomNum
 				ycoord += step
 				self.atoms[prevAtom].score -= cornerPenalty
-
+			prevAtom = -1
+			ycoord = self.maxy
+			while ycoord > self.miny:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineZ(xcoord, ycoord):
+						if prevAtom > 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							#print(dist)
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				ycoord -= step
+				self.atoms[prevAtom].score -= cornerPenalty
+			prevAtom = -1
+			zcoord = self.minz
+			while zcoord < self.maxz:
+				for atomNum in range(len(self.atoms)):
+					if self.atoms[atomNum].crossLineY(xcoord, zcoord):
+						if prevAtom > 0:
+							dist = self.atoms[atomNum].dist(self.atoms[prevAtom])
+							#print(dist)
+							if dist >= minCavSize:
+								self.atoms[atomNum].score += 1
+								self.atoms[prevAtom].score += 1
+						else:
+							self.atoms[atomNum].score -= cornerPenalty
+						prevAtom = atomNum
+				zcoord += step
+				self.atoms[prevAtom].score -= cornerPenalty
 			prevAtom = -1
 			zcoord = self.maxz
 			while zcoord > self.minz:
@@ -181,10 +272,10 @@ class boxParams():
 				self.atoms[prevAtom].score -= cornerPenalty
 
 			xcoord += step
-	def getActiveSiteAtoms(self, step = defaultStepSize, cavSize = minCavSize, topAtomsPersent = defaultTopAtomsPersent):
-		self.getActiveSiteAtomsX(step = step)
-		self.getActiveSiteAtomsY(step = step)
-		self.getActiveSiteAtomsZ(step = step)
+	def getActiveSiteAtoms(self, step, cavSize, topAtomsPersent):
+		self.getActiveSiteAtomsX(step, cavSize)
+		self.getActiveSiteAtomsY(step, cavSize)
+		self.getActiveSiteAtomsZ(step, cavSize)
 		self.atoms.sort(key=lambda atom: atom.score, reverse=True)
 		atomsAmount=topAtomsPersent*len(self.atoms)//100
 		#for atom in self.atoms[:atomsAmount]:
@@ -293,7 +384,7 @@ def readMol2ProteinMolecule(protinFile):
 
 
 ############################################# main #######################################
-def filterBoxAtoms(protInFile, box, step, topAtomsPersent = defaultTopAtomsPersent):
+def filterBoxAtoms(protInFile, box, step, cavSize = minCavSize, topAtomsPersent = defaultTopAtomsPersent):
 	pAtoms = readMol2ProteinMolecule(protInFile)
 	print('Total protein atoms:', len(pAtoms))
 	box.extractAtoms(pAtoms)
@@ -301,7 +392,7 @@ def filterBoxAtoms(protInFile, box, step, topAtomsPersent = defaultTopAtomsPerse
 		print('There are too little atoms in box! Check active site center or box size!')
 	print('Box atoms:', len(box.atoms))
 	#box.outBox(boxOutFile)
-	activeSiteAtoms = box.getActiveSiteAtoms(topAtomsPersent = topAtomsPersent)
+	activeSiteAtoms = box.getActiveSiteAtoms(step, cavSize, topAtomsPersent)
 	print('Active site atoms: ' + str(len(activeSiteAtoms)) +  ', (' + str(topAtomsPersent) + '%)')
 	return activeSiteAtoms
 
@@ -342,5 +433,6 @@ def getMoleculesContactsAsBitVect(file, filteredBoxAtoms, distance):
 			curline += 1
 		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms, distance))
 		names.append(name)
+		print(name)
 
 	return names, contactsBV
