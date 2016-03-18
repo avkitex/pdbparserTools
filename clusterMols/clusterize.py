@@ -5,17 +5,18 @@
 # sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
 # sudo pip install biopython chemspipy pylab
 
-
-
 from datetime import datetime
+
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+from rdkit.DataStructs.cDataStructs import SparseBitVect
+
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
-from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio import Phylo
 from Bio.Phylo import draw
+
 import pylab
 
 from modules.positional.kitsite import *
@@ -82,7 +83,7 @@ minCavSize = 5
 topAtomsPersent = 2
 
 cornerPenalty = 10
-############################ PARAMS #####################################
+############################ CHEM bitVectors #####################################
 
 print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
 
@@ -90,18 +91,18 @@ chemMolecules, chemNames = getTrainingCompounds(inhibitorsChsIds, notInhibitorsC
 print(getFormatedTime() + " Obtaining bit vectors representation")
 chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
 
+############################################# Distance bitVectors ############################
 
-############################################# params adopting ############################
+############################################# params ############################
 gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, gridSizeZ + bondLenBoxExtend)
 centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
 box = boxParams(centerCoords, gridSize)
-############################################# params adopting ############################
 
 print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
-
 filteredBox=filterBoxAtoms(protinFile, box, stepSize, topAtomsPersent)
 print(getFormatedTime() + " Getting bit vector representation")
 boxVectors, boxNames = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
+############################################# BOTH ############################
 
 print(getFormatedTime() + " Composing bit vectors")
 bothVectors, bothNames = appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames)
