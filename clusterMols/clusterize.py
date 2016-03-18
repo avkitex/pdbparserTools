@@ -32,7 +32,7 @@ def appendBitVectors(bitVector1, bitVector2):
     for i in range(bitVector2.GetNumBits()):
         res[i + bitVector1.GetNumBits()] = bitVector2[i]
     return res
-def appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames):
+def appendChemBoxBitVectors(chemNames, chemVectors, boxNames, boxVectors):
     newNames = []
     newVectors = []
     for cname in range(len(chemNames)):
@@ -45,19 +45,48 @@ def appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames):
                 newVectors.append(appendBitVectors(chemVectors[cname], boxVectors[bname]))
                 break
     return newVectors, newNames
-def clusterBitVectors(vectors, names):
+
+def getDistanceMatrix(bitVectors, names):
 	simil = []
-	for mol1 in range(len(bothVectors)):
-	    simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bothVectors[mol1], bothVectors[:mol1+1])])
-	dm =_DistanceMatrix(bothNames, simil)
+	for mol1 in range(len(bitVectors)):
+	    simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bitVectors[mol1], bitVectors[:mol1+1])])
+	return _DistanceMatrix(names, simil)
+def distanceMatrixToTree(distanceMatrix, method = True):
 	constructor = DistanceTreeConstructor()
-	tree = constructor.upgma(dm)
+	if method:
+		return constructor.upgma(distanceMatrix)
+	else:
+		return constructor.nj(distanceMatrix)
+def drawTree(tree):
 	Phylo.draw_ascii(tree)
 	#Phylo.draw_graphviz(tree)
 	#pylab.show()
+def genTreeBitVectors(vectors, names):
+	dm = getDistanceMatrix(vectors, names)
+	tree = distanceMatrixToTree(dm, True)
+	drawTree(tree)
 	return tree
 
+def getChemVectors():
+	print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
+	chemNames, chemMolecules = getTrainingCompounds(inhibitorsChsIds, notInhibitorsChsIds)
+	print(getFormatedTime() + " Obtaining bit vectors representation")
+	chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
+	return chemNames, chemVectors
 
+def getDistanceVectors():
+	print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
+	filteredBox=filterBoxAtoms(protinFile, box, stepSize, topAtomsPersent)
+	print(getFormatedTime() + " Getting bit vector representation")
+	boxNames, boxVectors = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
+	return boxNames, boxVectors
+
+def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
+	print(getFormatedTime() + " Composing bit vectors")
+	bothVectors, bothNames = appendChemBoxBitVectors(namesC, vectorsC, namesD, vectorsD)
+
+	print(getFormatedTime() + " Final tree")
+	genTreeBitVectors(bothVectors, bothNames)
 
 ############################ PARAMS #####################################
 protinFile='3NTB_D.mol2'
@@ -84,12 +113,7 @@ topAtomsPersent = 2
 
 cornerPenalty = 10
 ############################ CHEM bitVectors #####################################
-
-print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
-
-chemMolecules, chemNames = getTrainingCompounds(inhibitorsChsIds, notInhibitorsChsIds)
-print(getFormatedTime() + " Obtaining bit vectors representation")
-chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
+namesC, vectorsC = getChemVectors()
 
 ############################################# Distance bitVectors ############################
 
@@ -98,14 +122,6 @@ gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, g
 centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
 box = boxParams(centerCoords, gridSize)
 
-print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
-filteredBox=filterBoxAtoms(protinFile, box, stepSize, topAtomsPersent)
-print(getFormatedTime() + " Getting bit vector representation")
-boxVectors, boxNames = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
+namesD, vectorsD = getDistanceVectors()
 ############################################# BOTH ############################
-
-print(getFormatedTime() + " Composing bit vectors")
-bothVectors, bothNames = appendChemBoxBitVectors(chemVectors, chemNames, boxVectors, boxNames)
-
-print(getFormatedTime() + " Final tree")
-clusterBitVectors(bothVectors, bothNames)
+composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD)

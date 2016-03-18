@@ -66,7 +66,7 @@ def getTrainingCompounds(inhibitorsChsIds=[], notInhibitorsChsIds=[], longNames 
     moleculesY, namesY = getChemspiderCompounds(token, inhibitorsChsIds, 'yes', '_', longNames, onlyLettersDigits)
 
     moleculesN, namesN = getChemspiderCompounds(token, notInhibitorsChsIds, 'not', '_', longNames, onlyLettersDigits)
-    return moleculesY + moleculesN, namesY + namesN
+    return namesY + namesN, moleculesY + moleculesN
 
 
 # def similarityMatrixToTree(inFile):

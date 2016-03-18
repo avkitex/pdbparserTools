@@ -343,4 +343,4 @@ def getMoleculesContactsAsBitVect(file, filteredBoxAtoms, distance):
 		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms, distance))
 		names.append(name)
 
-	return contactsBV, names
+	return names, contactsBV
