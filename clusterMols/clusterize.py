@@ -4,7 +4,8 @@
 
 # sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
 # sudo pip install biopython chemspipy pylab
-
+from __future__ import print_function
+import os.path, argparse, gc
 from datetime import datetime
 
 from rdkit import Chem
@@ -22,9 +23,21 @@ import pylab
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
 
+parser = argparse.ArgumentParser(prog='Clusterize_training.py', usage='%(prog)s [options]', description='description',
+								 epilog="\xa9 Avktex 2016")
+parser.add_argument('-tf', '--trainingMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
+parser.add_argument('-pr', '--proteinMol2', metavar='GlobConfig', type=str, help='Full path to file with protein in mol2 format.', required=True)
+args = parser.parse_args()
+
+
 ############################ PARAMS #####################################
-protinFile='3NTB_D.mol2'
-trainingLigandsDocked='training_bp.mol2'
+if not os.path.isfile(args.trainingMol2):
+	print('Docked training compounds mol2 file is not exists')
+if not os.path.isfile(args.proteinMol2):
+	print('Protein mol2 file is not exists')
+
+#protinFile='3NTB_D.mol2'
+#trainingLigandsDocked='training_bp.mol2'
 #outBoxFile='box.xyz'
 outBoxFile=''
 
@@ -51,7 +64,7 @@ gridSizeZ = 30
 
 stepSize = 0.5
 minCavSize = 4
-topAtomsPersent = 25
+topAtomsPersent = 4
 
 ratioCoeff = 0.1
 
@@ -64,29 +77,36 @@ def getFormatedTime():
 	return str(datetime.utcnow().strftime("[%H:%M:%S]"))
 
 def appendBitVectors(bitVector1, bitVector2):
-    res = SparseBitVect(bitVector1.GetNumBits() + bitVector2.GetNumBits())
-    for i in range(bitVector1.GetNumBits()):
-        res[i] = bitVector1[i]
-    for i in range(bitVector2.GetNumBits()):
-        res[i + bitVector1.GetNumBits()] = bitVector2[i]
-    return res
+	res = SparseBitVect(bitVector1.GetNumBits() + bitVector2.GetNumBits())
+	for i in range(bitVector1.GetNumBits()):
+		res[i] = bitVector1[i]
+	for i in range(bitVector2.GetNumBits()):
+		res[i + bitVector1.GetNumBits()] = bitVector2[i]
+	return res
 def appendChemBoxBitVectors(chemNames, chemVectors, boxNames, boxVectors):
-    newNames = []
-    newVectors = []
-    for cname in range(len(chemNames)):
-        shortName = chemNames[cname][4:chemNames[cname][4:].find('_') + 4]
-        #print(shortName)
-        for bname in range(len(boxNames)):
-            if shortName in boxNames[bname]:
-                #print(boxNames[bname], chemNames[cname])
-                newNames.append(chemNames[cname])
-                newVectors.append(appendBitVectors(chemVectors[cname], boxVectors[bname]))
-                break
-    return newVectors, newNames
+	newNames = []
+	newVectors = []
+	for cname in range(len(chemNames)):
+		shortName = chemNames[cname][4:chemNames[cname][4:].find('_') + 4]
+		#print(shortName)
+		for bname in range(len(boxNames)):
+			if shortName in boxNames[bname]:
+				#print(boxNames[bname], chemNames[cname])
+				newNames.append(chemNames[cname])
+				newVectors.append(appendBitVectors(chemVectors[cname], boxVectors[bname]))
+				break
+	return newVectors, newNames
 def getSimilarityFromBitVectors(bitVectors):
 	simil = []
+	count = 0
+	n = 1
 	for mol1 in range(len(bitVectors)):
-	    simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bitVectors[mol1], bitVectors[:mol1+1])])
+		simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(bitVectors[mol1], bitVectors[:mol1+1])])
+		if count >= 100:
+			print(n * 100)
+			n += 1
+			count = 0
+		count += 1
 	return simil
 
 def getDistanceMatrix(names, bitVectors):
@@ -117,10 +137,9 @@ def getChemVectors():
 
 def getDistanceVectors():
 	print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
-	filteredBox=filterBoxAtoms(protinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
+	filteredBox=filterBoxAtoms(args.proteinMol2, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
 	print(getFormatedTime() + " Getting bit vector representation")
-	boxNames, boxVectors = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
-	return boxNames, boxVectors
+	return getMoleculesContactsAsBitVect(args.trainingMol2, filteredBox, bondLenClustering)
 
 def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
 	print(getFormatedTime() + " Chem tree")
@@ -156,7 +175,7 @@ def getTreeCombineSimilarityFromBitVectors(namesC, vectorsC, namesD, vectorsD):
 	return tree
 
 ############################ CHEM bitVectors #####################################
-namesC, vectorsC = getChemVectors()
+#namesC, vectorsC = getChemVectors()
 
 ############################################# Distance bitVectors ############################
 
@@ -166,7 +185,21 @@ centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
 box = boxParams(centerCoords, gridSize)
 
 namesD, vectorsD = getDistanceVectors()
+
+
+similD = getSimilarityFromBitVectors(vectorsD)
+del vectorsD
+gc.collect()
+print('PosTree')
+dmD = _DistanceMatrix(namesD, similD)
+print('Dm')
+del namesD
+del similD
+gc.collect()
+print('Now')
+drawTree(distanceMatrixToTree(dmD))
+
 ############################################# BOTH ############################
 
 #composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD)
-getTreeCombineSimilarityFromBitVectors(namesC, vectorsC, namesD, vectorsD)
+#getTreeCombineSimilarityFromBitVectors(namesC, vectorsC, namesD, vectorsD)
