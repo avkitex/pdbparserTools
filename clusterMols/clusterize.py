@@ -25,6 +25,7 @@ from modules.chem.mol2Reader import *
 ############################ PARAMS #####################################
 protinFile='3NTB_D.mol2'
 trainingLigandsDocked='training_bp.mol2'
+outBoxFile='box.xyz'
 
 inhibitorsChsIds=[331, 1353, 1906, 2000, 2066, 2121, 2157, 2562, 2925, 3065, 3097, 3192, 3225,\
 3254, 3544, 3584, 3693, 3694, 3897, 3904, 4339, 4393, 4480, 4617, 4911, 5304, 5308, 8711, 133236,\
@@ -51,7 +52,7 @@ stepSize = 0.5
 minCavSize = 4
 topAtomsPersent = 25
 
-ratioCoeff = 1
+ratioCoeff = 0.1
 
 ############################ PARAMS #####################################
 
@@ -115,7 +116,7 @@ def getChemVectors():
 
 def getDistanceVectors():
 	print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
-	filteredBox=filterBoxAtoms(protinFile, box, stepSize, minCavSize, topAtomsPersent)
+	filteredBox=filterBoxAtoms(protinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
 	print(getFormatedTime() + " Getting bit vector representation")
 	boxNames, boxVectors = getMoleculesContactsAsBitVect(trainingLigandsDocked, filteredBox, bondLenClustering)
 	return boxNames, boxVectors

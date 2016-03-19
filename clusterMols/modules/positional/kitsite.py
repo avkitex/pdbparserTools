@@ -381,17 +381,32 @@ def readMol2ProteinMolecule(protinFile):
 		curStr = protH.next()
 	protH.close()
 	return proteinAtoms
+def atomFromXyzString(line):
+	items = line.split()
+	return atom(0, items[0], float(items[1]), float(items[2]), float(items[3]), items[0], 0, "LIG", 0.0, line)
 
+def readXyzProteinMolecule(protInFile):
+	protH = open(protInFile)
+	proteinAtoms = []
+	pNumAtoms = int(protH.next())
+	pname = protH.next()
+	for line in protH:
+		atom = atomFromXyzString(line.strip())
+		if atom:
+			proteinAtoms.append(atom)
+	protH.close()
+	return proteinAtoms
 
 ############################################# main #######################################
-def filterBoxAtoms(protInFile, box, step, cavSize = minCavSize, topAtomsPersent = defaultTopAtomsPersent):
+def filterBoxAtoms(protInFile, box, step, cavSize = minCavSize, topAtomsPersent = defaultTopAtomsPersent, outBoxFile = ''):
 	pAtoms = readMol2ProteinMolecule(protInFile)
 	print('Total protein atoms:', len(pAtoms))
 	box.extractAtoms(pAtoms)
 	if len(box.atoms) < 10:
 		print('There are too little atoms in box! Check active site center or box size!')
 	print('Box atoms:', len(box.atoms))
-	#box.outBox(boxOutFile)
+	if len(outBoxFile):
+		box.outBox(outBoxFile)
 	activeSiteAtoms = box.getActiveSiteAtoms(step, cavSize, topAtomsPersent)
 	print('Active site atoms: ' + str(len(activeSiteAtoms)) +  ', (' + str(topAtomsPersent) + '%)')
 	return activeSiteAtoms
