@@ -2,8 +2,14 @@
 
 # sudo apt-get update
 
-# sudo apt-get install python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
-# sudo pip install biopython chemspipy pylab
+# sudo apt-get install -y python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
+# sudo pip install biopython chemspipy
+
+#deprecated pylab
+
+# sudo apt-get install -y emboss embassy-phylip
+# fneighbor -matrixtype l -datafile bigDM.dm -treetype u -outfile out
+
 from __future__ import print_function
 import os.path, argparse, gc
 from datetime import datetime
@@ -27,6 +33,7 @@ parser = argparse.ArgumentParser(prog='Clusterize_training.py', usage='%(prog)s 
 								 epilog="\xa9 Avktex 2016")
 parser.add_argument('-tf', '--trainingMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
 parser.add_argument('-pr', '--proteinMol2', metavar='GlobConfig', type=str, help='Full path to file with protein in mol2 format.', required=True)
+parser.add_argument('-dm', '--distanceMatrixOutput', metavar='GlobConfig', type=str, help='Full path to distance matrix output file.', required=True)
 args = parser.parse_args()
 
 
@@ -141,6 +148,7 @@ def getDistanceVectors():
 	print(getFormatedTime() + " Getting bit vector representation")
 	return getMoleculesContactsAsBitVect(args.trainingMol2, filteredBox, bondLenClustering)
 
+
 def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
 	print(getFormatedTime() + " Chem tree")
 	genTreeBitVectors(namesC, vectorsC)
@@ -173,6 +181,41 @@ def getTreeCombineSimilarityFromBitVectors(namesC, vectorsC, namesD, vectorsD):
 	tree = distanceMatrixToTree(dm, True)
 	drawTree(tree)
 	return tree
+def outLowerTriangularDistanceMatrix(ofile, names, simil):
+	fh = open(ofile, 'w')
+	print('OutDistanceMatrix sm')
+	print(len(namesD), file=fh)
+	for i in range(len(namesD)):
+		if i % 100 == 0:
+			print(i)
+		print (namesD[i], file=fh, end = '')
+		for dist in similD[i][:-1]:
+			print('\t', "%.4f" % dist, sep='', end = '', file=fh)
+		print(file=fh)
+	fh.close()
+
+def genDistanceMatrixFileFewCompounds():
+	namesD, vectorsD = getDistanceVectors()
+	similD = getSimilarityFromBitVectors(vectorsD)
+	del vectorsD
+	gc.collect()
+	outLowerTriangularDistanceMatrix(args.distanceMatrixOutput, namesD, similD)
+
+def genDistanceMatrixFileManyCompounds(ofile):
+	namesD, vectorsD = getDistanceVectors()
+	fh = open(ofile, 'w')
+	print('OutDistanceMatrix obo')
+	print(len(namesD), file=fh)
+
+	for cnum1 in range(len(namesD)):
+		if cnum1 % 100 == 0:
+			print(cnum1)
+		print (namesD[cnum1], file=fh, end = '')
+		bsimil = DataStructs.BulkTanimotoSimilarity(vectorsD[cnum1], vectorsD[:cnum1])
+		for sim in bsimil:
+			print('\t', "%.4f" % sim, sep='', end = '', file=fh)
+		print(file=fh)
+	fh.close()
 
 ############################ CHEM bitVectors #####################################
 #namesC, vectorsC = getChemVectors()
@@ -184,20 +227,22 @@ gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, g
 centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
 box = boxParams(centerCoords, gridSize)
 
-namesD, vectorsD = getDistanceVectors()
+############################################# Few compounds ############################
+#genDistanceMatrixFileFewCompounds()
+############################################# Few compounds ############################
 
 
-similD = getSimilarityFromBitVectors(vectorsD)
-del vectorsD
-gc.collect()
-print('PosTree')
-dmD = _DistanceMatrix(namesD, similD)
-print('Dm')
-del namesD
-del similD
-gc.collect()
-print('Now')
-drawTree(distanceMatrixToTree(dmD))
+genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput)
+#dmD = _DistanceMatrix(namesD, similD)
+#print('Dm')
+
+#del namesD
+#del similD
+#gc.collect()
+#print('Now')
+#drawTree(distanceMatrixToTree(dmD))
+
+
 
 ############################################# BOTH ############################
 
