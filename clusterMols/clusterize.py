@@ -135,12 +135,13 @@ def genTreeBitVectors(names, vectors):
 	drawTree(tree)
 	return tree
 
-def getChemVectors():
+def getChemBitVectorsArray(molecules):
+	return [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
+def getChemThainingCompondsAsVectors():
 	print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
 	chemNames, chemMolecules = getTrainingCompounds(inhibitorsChsIds, notInhibitorsChsIds)
 	print(getFormatedTime() + " Obtaining bit vectors representation")
-	chemVectors = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in chemMolecules]
-	return chemNames, chemVectors
+	return chemNames, getChemBitVectorsArray(chemMolecules)
 
 def getDistanceVectors():
 	print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
@@ -201,38 +202,43 @@ def genDistanceMatrixFileFewCompounds():
 	gc.collect()
 	outLowerTriangularDistanceMatrix(args.distanceMatrixOutput, namesD, similD)
 
-def genDistanceMatrixFileManyCompounds(ofile):
-	namesD, vectorsD = getDistanceVectors()
+def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 	fh = open(ofile, 'w')
 	print('OutDistanceMatrix obo')
-	print(len(namesD), file=fh)
+	print(len(names), file=fh)
 
-	for cnum1 in range(len(namesD)):
+	for cnum1 in range(len(names)):
 		if cnum1 % 100 == 0:
 			print(cnum1)
-		print (namesD[cnum1], file=fh, end = '')
-		bsimil = [1-x for x in DataStructs.BulkTanimotoSimilarity(vectorsD[cnum1], vectorsD[:cnum1])]
+		print (names[cnum1], file=fh, end = '')
+		bsimil = [1-x for x in DataStructs.BulkTanimotoSimilarity(vectors[cnum1], vectors[:cnum1])]
 		for sim in bsimil:
 			print('\t', "%.4f" % sim, sep='', end = '', file=fh)
 		print(file=fh)
 	fh.close()
 
 ############################ CHEM bitVectors #####################################
-#namesC, vectorsC = getChemVectors()
+#namesC, vectorsC = getChemThainingCompondsAsVectors()
+namesC, vectorsC = getChemMoleculesAsBitVectorsOneByOne(args.trainingMol2)
 
+genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesD, vectorsD)
 ############################################# Distance bitVectors ############################
 
 ############################################# params ############################
-gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, gridSizeZ + bondLenBoxExtend)
-centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
-box = boxParams(centerCoords, gridSize)
+#gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, gridSizeZ + bondLenBoxExtend)
+#centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
+#box = boxParams(centerCoords, gridSize)
 
 ############################################# Few compounds ############################
 #genDistanceMatrixFileFewCompounds()
 ############################################# Few compounds ############################
 
 
-genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput)
+#namesD, vectorsD = getDistanceVectors()
+#genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesD, vectorsD)
+
+
+
 #dmD = _DistanceMatrix(namesD, similD)
 #print('Dm')
 
