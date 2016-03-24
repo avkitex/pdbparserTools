@@ -197,7 +197,7 @@ def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 namesC, vectorsC = getChemThainingCompondsAsVectors()
 #namesC, vectorsC = getChemMoleculesAsBitVectorsOneByOne(args.trainingMol2)
 
-genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesD, vectorsD)
+genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesC, vectorsC)
 ############################################# Distance bitVectors ############################
 
 ############################################# params ############################

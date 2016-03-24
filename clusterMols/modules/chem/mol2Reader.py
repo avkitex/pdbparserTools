@@ -13,12 +13,14 @@ from Bio.Phylo import draw
 
 from ..common.f import iterMol2
 
-def getChemMoleculesAsBitVectorsOneByOne(inputFile):
+def getChemMoleculesAsBitVectorsOneByOne(file):
 	vectors = []
 	names = []
 	for lines in iterMol2(file):
+		name=lines[1].strip()
+		print(name)
 		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,1024))
-		names.append(lines[1])
+		names.append(name)
 	print(len(names))
 	return names, vectors
 
