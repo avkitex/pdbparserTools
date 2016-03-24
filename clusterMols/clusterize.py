@@ -24,7 +24,7 @@ from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
 from Bio.Phylo import draw
 
-import pylab
+#import pylab
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
@@ -71,7 +71,7 @@ gridSizeZ = 30
 
 stepSize = 0.5
 minCavSize = 4
-topAtomsPersent = 4
+topAtomsPersent = 20
 
 ratioCoeff = 0.1
 
@@ -211,7 +211,7 @@ def genDistanceMatrixFileManyCompounds(ofile):
 		if cnum1 % 100 == 0:
 			print(cnum1)
 		print (namesD[cnum1], file=fh, end = '')
-		bsimil = DataStructs.BulkTanimotoSimilarity(vectorsD[cnum1], vectorsD[:cnum1])
+		bsimil = [1-x for x in DataStructs.BulkTanimotoSimilarity(vectorsD[cnum1], vectorsD[:cnum1])]
 		for sim in bsimil:
 			print('\t', "%.4f" % sim, sep='', end = '', file=fh)
 		print(file=fh)
