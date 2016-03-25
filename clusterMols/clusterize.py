@@ -8,7 +8,7 @@
 #deprecated pylab
 
 # sudo apt-get install -y emboss embassy-phylip
-# fneighbor -matrixtype l -datafile bigDM.dm -treetype u -outfile out
+# fneighbor -matrixtype l -datafile bigDM.dm -treetype n -outfile out
 
 from __future__ import print_function
 import os.path, argparse, gc
@@ -22,62 +22,10 @@ from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
-from Bio.Phylo import draw
-
-#import pylab
+#from Bio.Phylo import draw
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
-
-parser = argparse.ArgumentParser(prog='Clusterize_training.py', usage='%(prog)s [options]', description='description',
-								 epilog="\xa9 Avktex 2016")
-parser.add_argument('-tf', '--trainingMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
-parser.add_argument('-pr', '--proteinMol2', metavar='GlobConfig', type=str, help='Full path to file with protein in mol2 format.', required=True)
-parser.add_argument('-dm', '--distanceMatrixOutput', metavar='GlobConfig', type=str, help='Full path to distance matrix output file.', required=True)
-args = parser.parse_args()
-
-
-############################ PARAMS #####################################
-if not os.path.isfile(args.trainingMol2):
-	print('Docked training compounds mol2 file is not exists')
-if not os.path.isfile(args.proteinMol2):
-	print('Protein mol2 file is not exists')
-
-#protinFile='3NTB_D.mol2'
-#trainingLigandsDocked='training_bp.mol2'
-#outBoxFile='box.xyz'
-outBoxFile=''
-
-inhibitorsChsIds=[331, 1353, 1906, 2000, 2066, 2121, 2157, 2562, 2925, 3065, 3097, 3192, 3225,\
-3254, 3544, 3584, 3693, 3694, 3897, 3904, 4339, 4393, 4480, 4617, 4911, 5304, 5308, 8711, 133236,\
-28714, 29843, 32983, 33051, 34911, 65084, 110209, 137720, 147913, 171462, 388601, 392692, 392977,\
-393569, 394812, 394942, 581047, 8082544, 1265915, 2871682, 3512137, 4444105, 4444112, 4445953, \
-4510145, 5365258, 8081394, 8098374, 8443182, 8530675, 9569918, 10442653, 10442740, 20572535, \
-21106585, 23122887, 23122889, 23122978, 25057753] # 12951165 no results case of bor
-notInhibitorsChsIds=[650, 682, 733, 864, 971, 1116, 1512, 1710, 2971, 3350, 5611, 5653, 5764, 5768, 6170, 6257, 6312, 7742, 10610, 73505, 83361, 96749, 111188, 120261, 216840, 391555,\
-392800, 4576521, 8257952, 20572534, 23122865, 23122927, 23123076, 112728, 10442445]
-
-
-asCenterX = -26.9
-asCenterY = 21.9
-asCenterZ = -76.9
-
-bondLenBoxExtend = 0
-bondLenClustering = 4.5
-
-gridSizeX = 30
-gridSizeY = 30
-gridSizeZ = 30
-
-stepSize = 0.5
-minCavSize = 4
-topAtomsPersent = 20
-
-ratioCoeff = 0.1
-
-############################ PARAMS #####################################
-
-
 
 
 def getFormatedTime():
@@ -217,40 +165,4 @@ def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 		print(file=fh)
 	fh.close()
 
-############################ CHEM bitVectors #####################################
-#namesC, vectorsC = getChemThainingCompondsAsVectors()
-namesC, vectorsC = getChemMoleculesAsBitVectorsOneByOne(args.trainingMol2)
-
-genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesC, vectorsC)
-############################################# Distance bitVectors ############################
-
-############################################# params ############################
-#gridSize = point3D(gridSizeX + bondLenBoxExtend, gridSizeY + bondLenBoxExtend, gridSizeZ + bondLenBoxExtend)
-#centerCoords = point3D(asCenterX, asCenterY, asCenterZ)
-#box = boxParams(centerCoords, gridSize)
-
-############################################# Few compounds ############################
-#genDistanceMatrixFileFewCompounds()
-############################################# Few compounds ############################
-
-
-#namesD, vectorsD = getDistanceVectors()
-#genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, namesD, vectorsD)
-
-
-
-#dmD = _DistanceMatrix(namesD, similD)
-#print('Dm')
-
-#del namesD
-#del similD
-#gc.collect()
-#print('Now')
-#drawTree(distanceMatrixToTree(dmD))
-
-
-
-############################################# BOTH ############################
-
-#composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD)
-#getTreeCombineSimilarityFromBitVectors(namesC, vectorsC, namesD, vectorsD)
+	
