@@ -7,6 +7,9 @@ from rdkit.Chem import AllChem
 
 from ..common.f import iterMol2
 
+def getChemBitVectorsArrayFromMolecules(molecules, vectorSize = 1024):
+	return [AllChem.GetMorganFingerprintAsBitVect(x,2,vectorSize) for x in molecules]
+	
 def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024):
 	vectors = []
 	names = []

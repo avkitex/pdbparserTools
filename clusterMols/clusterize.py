@@ -13,8 +13,6 @@
 from __future__ import print_function
 from datetime import datetime
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
 from rdkit import DataStructs
 from rdkit.DataStructs.cDataStructs import SparseBitVect
 
@@ -90,13 +88,11 @@ def genTreeBitVectors(names, vectors):
 	drawTree(tree)
 	return tree
 
-def getChemBitVectorsArray(molecules):
-	return [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
-def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames = False):
+def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames = False, vectorSize = 1024):
 	logMsg("Downloading ideal training molecules for chemical clustering")
 	chemNames, chemMolecules = getTrainingCompounds(inhibitorsArr, notInhibitorsArr, longNames)#onlyLettersDigits = False
 	logMsg("Obtaining bit vectors representation")
-	return chemNames, getChemBitVectorsArray(chemMolecules)
+	return chemNames, getChemBitVectorsArrayFromMolecules(chemMolecules, vectorSize)
 
 def getDistanceVectors(proteinFile, box, moleculesFile, topAtomsPersent = defaults['topAtomsPersent'], bondLenClustering = defaults['bondLenClustering'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = ''):
 	logMsg("Getting protein grid box and filtering active site atoms")
