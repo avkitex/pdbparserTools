@@ -33,17 +33,6 @@ def readMoleculesRd(file):
 	print(len(molecules))
 	return molecules, names
 
-def clusterMolecules(molecules, names, vectorSize = 1024):
-	simil = []
-	vects = [AllChem.GetMorganFingerprintAsBitVect(x,2,vectorSize) for x in molecules]
-	for mol1 in range(len(vects)):
-		simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(vects[mol1], vects[:mol1+1])])
-	dm =_DistanceMatrix(names, simil)
-	constructor = DistanceTreeConstructor()
-	tree = constructor.upgma(dm)
-	return tree
-#Bio.Phylo.draw(tree)
-
 def leftOnlyLettersDigits(sn):
 	res = ''
 	for let in sn:
