@@ -13,13 +13,13 @@ from Bio.Phylo import draw
 
 from ..common.f import iterMol2
 
-def getChemMoleculesAsBitVectorsOneByOne(file):
+def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024):
 	vectors = []
 	names = []
 	for lines in iterMol2(file):
 		name=lines[1].strip()
 		print(name)
-		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,1024))
+		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,vectorSize))
 		names.append(name)
 	print(len(names))
 	return names, vectors
@@ -33,9 +33,9 @@ def readMoleculesRd(file):
 	print(len(molecules))
 	return molecules, names
 
-def clusterMolecules(molecules, names):
+def clusterMolecules(molecules, names, vectorSize = 1024):
 	simil = []
-	vects = [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
+	vects = [AllChem.GetMorganFingerprintAsBitVect(x,2,vectorSize) for x in molecules]
 	for mol1 in range(len(vects)):
 		simil.append([1-x for x in DataStructs.BulkTanimotoSimilarity(vects[mol1], vects[:mol1+1])])
 	dm =_DistanceMatrix(names, simil)
