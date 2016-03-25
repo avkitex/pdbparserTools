@@ -20,8 +20,8 @@ from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
 
-from modules.positional.kitsite import *
-from modules.chem.mol2Reader import *
+from modules.positional.contactsFunctions import *
+from modules.chem.chemFunctions import *
 
 defaults = {}
 
