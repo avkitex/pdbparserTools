@@ -25,10 +25,19 @@ from Bio import Phylo
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
 
+defaults = {}
+
+defaults['bondLenClustering'] = 4.5
+
+defaults['stepSize'] = 0.5
+defaults['minCavSize'] = 4
+defaults['topAtomsPersent'] = 20
+
 
 def getFormatedTime():
 	return str(datetime.utcnow().strftime("[%H:%M:%S]"))
-
+def logMsg(msg):
+	print(getFormatedTime(), msg)
 def appendBitVectors(bitVector1, bitVector2):
 	res = SparseBitVect(bitVector1.GetNumBits() + bitVector2.GetNumBits())
 	for i in range(bitVector1.GetNumBits()):
@@ -84,16 +93,16 @@ def genTreeBitVectors(names, vectors):
 def getChemBitVectorsArray(molecules):
 	return [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
 def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames = False):
-	print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
+	logMsg("Downloading ideal training molecules for chemical clustering")
 	chemNames, chemMolecules = getTrainingCompounds(inhibitorsArr, notInhibitorsArr, longNames)#onlyLettersDigits = False
-	print(getFormatedTime() + " Obtaining bit vectors representation")
+	logMsg("Obtaining bit vectors representation")
 	return chemNames, getChemBitVectorsArray(chemMolecules)
 
-def getDistanceVectors():
-	print(getFormatedTime() + " Getting protein grid box and filtering active site atoms")
-	filteredBox=filterBoxAtoms(args.proteinMol2, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
-	print(getFormatedTime() + " Getting bit vector representation")
-	return getMoleculesContactsAsBitVect(args.trainingMol2, filteredBox, bondLenClustering)
+def getDistanceVectors(proteinFile, box, moleculesFile, topAtomsPersent = defaults['topAtomsPersent'], bondLenClustering = defaults['bondLenClustering'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = ''):
+	logMsg("Getting protein grid box and filtering active site atoms")
+	filteredBox=filterBoxAtoms(proteinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
+	logMsg("Getting bit vector representation")
+	return getMoleculesContactsAsBitVect(moleculesFile, filteredBox, bondLenClustering)
 
 
 def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
@@ -149,14 +158,14 @@ def genDistanceMatrixFileFewCompounds():
 
 def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 	fh = open(ofile, 'w')
-	print('OutDistanceMatrix obo')
+	logMsg('Generating and outputting distance matrix')
 	print(len(names), file=fh)
 
 	for cnum1 in range(len(names)):
 		if cnum1 % 100 == 0:
 			print(cnum1)
 		print (names[cnum1], file=fh, end = '')
-		bsimil = [1-x for x in DataStructs.BulkTanimotoSimilarity(vectors[cnum1], vectors[:cnum1])]
+		bsimil = [1 - x for x in DataStructs.BulkTanimotoSimilarity(vectors[cnum1], vectors[:cnum1])]
 		for sim in bsimil:
 			print('\t', "%.4f" % sim, sep='', end = '', file=fh)
 		print(file=fh)

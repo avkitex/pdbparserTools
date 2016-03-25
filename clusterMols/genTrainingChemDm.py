@@ -1,7 +1,8 @@
+from __future__ import print_function
 import os.path, argparse, sys
 
 from clusterize import getChemThainingCompondsAsVectors, genDistanceMatrixFileManyCompounds
-from clusterize import drawTree, distanceMatrixToTree
+#from clusterize import drawTree, distanceMatrixToTree
 
 parser = argparse.ArgumentParser(prog='genTrainingChemDm.py', usage='%(prog)s [options]', description='description',
 								 epilog="\xa9 Avktex 2016")
