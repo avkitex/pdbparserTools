@@ -11,7 +11,6 @@
 # fneighbor -matrixtype l -datafile bigDM.dm -treetype n -outfile out
 
 from __future__ import print_function
-import os.path, argparse, gc
 from datetime import datetime
 
 from rdkit import Chem
@@ -22,7 +21,6 @@ from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
-#from Bio.Phylo import draw
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
@@ -85,9 +83,9 @@ def genTreeBitVectors(names, vectors):
 
 def getChemBitVectorsArray(molecules):
 	return [AllChem.GetMorganFingerprintAsBitVect(x,2,1024) for x in molecules]
-def getChemThainingCompondsAsVectors():
+def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames = False):
 	print(getFormatedTime() + " Downloading ideal training molecules for chemical clustering")
-	chemNames, chemMolecules = getTrainingCompounds(inhibitorsChsIds, notInhibitorsChsIds)
+	chemNames, chemMolecules = getTrainingCompounds(inhibitorsArr, notInhibitorsArr, longNames)#onlyLettersDigits = False
 	print(getFormatedTime() + " Obtaining bit vectors representation")
 	return chemNames, getChemBitVectorsArray(chemMolecules)
 
@@ -147,7 +145,6 @@ def genDistanceMatrixFileFewCompounds():
 	namesD, vectorsD = getDistanceVectors()
 	similD = getSimilarityFromBitVectors(vectorsD)
 	del vectorsD
-	gc.collect()
 	outLowerTriangularDistanceMatrix(args.distanceMatrixOutput, namesD, similD)
 
 def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
