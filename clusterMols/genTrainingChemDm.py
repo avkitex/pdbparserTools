@@ -1,15 +1,3 @@
-#!/usr/bin/python
-
-# sudo apt-get update
-
-# sudo apt-get install -y python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
-# sudo pip install biopython chemspipy
-
-#deprecated pylab
-
-# sudo apt-get install -y emboss embassy-phylip
-# fneighbor -matrixtype l -datafile bigDM.dm -treetype u -outfile out
-
 from __future__ import print_function
 import os.path, argparse, gc
 from datetime import datetime
@@ -22,9 +10,7 @@ from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
-from Bio.Phylo import draw
-
-#import pylab
+#from Bio.Phylo import draw
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *

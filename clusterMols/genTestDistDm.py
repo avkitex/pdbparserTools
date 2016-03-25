@@ -1,15 +1,3 @@
-#!/usr/bin/python
-
-# sudo apt-get update
-
-# sudo apt-get install -y python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
-# sudo pip install biopython chemspipy
-
-#deprecated pylab
-
-# sudo apt-get install -y emboss embassy-phylip
-# fneighbor -matrixtype l -datafile bigDM.dm -treetype u -outfile out
-
 from __future__ import print_function
 import os.path, argparse, gc
 from datetime import datetime
@@ -22,14 +10,12 @@ from rdkit.DataStructs.cDataStructs import SparseBitVect
 from Bio.Phylo.TreeConstruction import _DistanceMatrix
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
 from Bio import Phylo
-from Bio.Phylo import draw
-
-#import pylab
+#from Bio.Phylo import draw
 
 from modules.positional.kitsite import *
 from modules.chem.mol2Reader import *
 
-parser = argparse.ArgumentParser(prog='Clusterize_training.py', usage='%(prog)s [options]', description='description',
+parser = argparse.ArgumentParser(prog='genTestDistDm.py', usage='%(prog)s [options]', description='description',
 								 epilog="\xa9 Avktex 2016")
 parser.add_argument('-tf', '--inputMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
 parser.add_argument('-pr', '--proteinMol2', metavar='GlobConfig', type=str, help='Full path to file with protein in mol2 format.', required=True)
@@ -38,16 +24,15 @@ parser.add_argument('-dm', '--distanceMatrixOutput', metavar='GlobConfig', type=
 args = parser.parse_args()
 
 
-############################ PARAMS #####################################
 if not os.path.isfile(args.inputMol2):
 	print('Docked training compounds mol2 file is not exists')
 if not os.path.isfile(args.proteinMol2):
 	print('Protein mol2 file is not exists')
 
+############################ PARAMS #####################################
 asCenterX = -26.9
 asCenterY = 21.9
 asCenterZ = -76.9
-
 
 gridSizeX = 30
 gridSizeY = 30
@@ -97,19 +82,6 @@ def getDistanceVectors(proteinFile, box, inputMol2):
 	print(getFormatedTime() + " Getting bit vector representation")
 	return getMoleculesContactsAsBitVect(inputMol2, filteredBox, bondLenClustering)
 
-
-def outLowerTriangularDistanceMatrix(ofile, names, simil):
-	fh = open(ofile, 'w')
-	print('OutDistanceMatrix sm')
-	print(len(namesD), file=fh)
-	for i in range(len(namesD)):
-		if i % 100 == 0:
-			print(i)
-		print (namesD[i], file=fh, end = '')
-		for dist in similD[i][:-1]:
-			print('\t', "%.4f" % dist, sep='', end = '', file=fh)
-		print(file=fh)
-	fh.close()
 
 def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 	fh = open(ofile, 'w')
