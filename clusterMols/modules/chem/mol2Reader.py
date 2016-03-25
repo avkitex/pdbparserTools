@@ -4,12 +4,6 @@ from chemspipy import ChemSpider
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit import DataStructs
-
-from Bio.Phylo.TreeConstruction import _DistanceMatrix
-from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
-from Bio import Phylo
-from Bio.Phylo import draw
 
 from ..common.f import iterMol2
 
