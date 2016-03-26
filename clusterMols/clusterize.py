@@ -2,7 +2,7 @@
 
 # sudo apt-get update
 
-# sudo apt-get install -y python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
+# sudo apt-get install -y python python-dev python-rdkit librdkit1 rdkit-data libfreetype6-dev python-networkx python-PyGraphviz
 # sudo pip install biopython chemspipy
 
 #deprecated pylab
