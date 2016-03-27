@@ -3,11 +3,11 @@ import os.path, argparse, sys
 
 from clusterize import getChemMoleculesAsBitVectorsOneByOne, genDistanceMatrixFileManyCompounds
 #from clusterize import drawTree, distanceMatrixToTree
-getChemMoleculesAsBitVectorsOneByOne
+
 
 parser = argparse.ArgumentParser(prog='genTrainingChemDm.py', usage='%(prog)s [options]', description='description',
 								 epilog="\xa9 Avktex 2016")
-parser.add_argument('-tf', '--inputMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
+parser.add_argument('-im', '--inputMol2', metavar='GlobConfig', type=str, help='Full path to multiMol2 training compounds docked file.', required=True)
 parser.add_argument('-dm', '--distanceMatrixOutput', metavar='GlobConfig', type=str, help='Full path to distance matrix output file.', required=True)
 
 args = parser.parse_args()
