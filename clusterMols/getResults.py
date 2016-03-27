@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os.path, argparse, sys
+from copy import deepcopy
 
 from clusterize import getChemMoleculesAsBitVectorsOneByOne, getChemThainingCompondsAsVectors, genDistanceMatrixFileManyCompounds, getDistTrainigToBaseDistMatrix
 from clusterize import drawTree, distanceMatrixToTree, getDistanceMatrix
@@ -12,6 +13,7 @@ parser.add_argument('-bm', '--baseMol2', metavar='GlobConfig', type=str, help='F
 #parser.add_argument('-ninhl', '--notInhibitorsList', metavar='GlobConfig', type=str, help='Not inhibitors list.', required=True)
 args = parser.parse_args()
 
+averageIsolatedDist = 'solated'
 
 if not os.path.isfile(args.baseMol2):
 	print('Docked training compounds mol2 file does not exists')
@@ -31,29 +33,39 @@ inhibitorsChsIds=[331, 1353, 1906, 2000, 2066, 2121, 2157, 2562, 2925, 3065, 309
 notInhibitorsChsIds=[650, 682, 733, 864, 971, 1116, 1512, 1710, 2971, 3350, 5611, 5653, 5764, 5768, 6170, 6257, 6312, 7742, 10610, 73505, 83361, 96749, 111188, 120261, 216840, 391555,\
 392800, 4576521, 8257952, 20572534, 23122865, 23122927, 23123076, 112728, 10442445]
 
-def averageDistances(distances, list):
-	if list[0] not in distances:
-		print('There is no ' + list[0] + ' in distances matrix')
+def averageDistances(distances, subsetTraining):
+	if subsetTraining[0] not in distances:
+		print('There is no ' + subsetTraining[0] + ' in distances matrix')
 		return []
-	out = distances[list[0]]
-	for tname in list[1:]:
+	out = deepcopy(distances[subsetTraining[0]])
+	for tname in subsetTraining[1:]:
 		if tname not in distances:
 			print('There is no ' + tname + ' in distances matrix')
 			continue
-		for bcomp in range(len(distances[tname])):
-			out[bcomp] += distances[tname][bcomp]
-	for i in out:
-		i /= len(list)
+		for compName in distances[tname]:
+			out[compName] += distances[tname][compName]
+	for compName in out:
+		out[compName] /= len(subsetTraining)
 	return out
-
-def getTopSimilarCompounds(distances, namesBase, subsetTraining, topPer = 10):
-	averageDist = zip(namesBase, averageDistances(distances, subsetTraining))
-	averageDist.sort(key=lambda x: -x[1])
-	res = []
-	for cname in averageDist[:int(topPer/100. * len(averageDist))]:
-		#print(cname)
-		res.append(cname[0])
-	return res
+def isolatedDistances(distances, subsetTraining, amount):
+	amount = max(amount, 10)
+	res = set()
+	for tname in subsetTraining:
+		print(tname, '******')
+		if tname not in distances:
+			print('There is no ' + tname + ' in distances matrix')
+			continue
+		out = deepcopy(distances[tname])
+		for i in sorted(out.keys(), key=out.get, reverse=True)[:amount]:
+			res.add(i)
+			print(i, out[i])
+	return list(res)
+def getTopSimilarCompounds(distances, subsetTraining, topPer = 10.):
+	if averageIsolatedDist == 'average':
+		averageDist = averageDistances(distances, subsetTraining)
+		return sorted(averageDist.keys(), key=averageDist.get, reverse=True)[:int(topPer/100. * len(averageDist))]
+	else:
+		return isolatedDistances(distances, subsetTraining, int(topPer/100. * len(distances[subsetTraining[0]]) / len(subsetTraining)))
 def filterVectorsByNamesList(names, vectors, list):
 	comp = dict(zip(names, vectors))
 	res = []
@@ -90,12 +102,12 @@ trainChemTree = distanceMatrixToTree(getDistanceMatrix(namesTrain, vectorsTrain)
 #print(trainChemTree)
 ############################ Base bitVectors #####################################
 
-namesBase, vectorsBase = getChemMoleculesAsBitVectorsOneByOne(args.baseMol2, limit=5000)
-distances = getDistTrainigToBaseDistMatrix(namesTrain, vectorsTrain, namesBase, vectorsBase)
+namesBase, vectorsBase = getChemMoleculesAsBitVectorsOneByOne(args.baseMol2, limit=-1)
+distances = getDistTrainigToBaseDistMatrix(chemTrainMolsDict, namesBase, vectorsBase)
 maxSimilarNames = set()
 for subset1 in findYesClades(trainChemTree, 75):
 	#print(subset1)
-	topBaseLikeTrainigSetNames = getTopSimilarCompounds(distances, namesBase, subset1, topPer = 2)
+	topBaseLikeTrainigSetNames = getTopSimilarCompounds(distances, subset1, topPer = 2)
 	for name in topBaseLikeTrainigSetNames:
 		maxSimilarNames.add(name)
 	#tree2Names = subset1 + topBaseLikeTrainigSetNames

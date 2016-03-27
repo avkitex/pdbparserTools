@@ -167,10 +167,10 @@ def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 		print(file=fh)
 	fh.close()
 
-def getDistTrainigToBaseDistMatrix(namesTrain, vectorsTrain, namesBase, vectorsBase):
+def getDistTrainigToBaseDistMatrix(chemTrainMolsDict, namesBase, vectorsBase):
 	result = {}
-	for tname in range(len(namesTrain)):
-		result[namesTrain[tname]] = DataStructs.BulkTanimotoSimilarity(vectorsTrain[tname], vectorsBase)
+	for tname in chemTrainMolsDict:
+		result[tname] = dict(zip(namesBase, DataStructs.BulkTanimotoSimilarity(chemTrainMolsDict[tname], vectorsBase)))
 	return result
 	
 	
