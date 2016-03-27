@@ -10,14 +10,18 @@ from ..common.f import iterMol2
 def getChemBitVectorsArrayFromMolecules(molecules, vectorSize = 1024):
 	return [AllChem.GetMorganFingerprintAsBitVect(x,2,vectorSize) for x in molecules]
 	
-def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024):
+def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024, limit = -1):
 	vectors = []
 	names = []
+	total = 0
 	for lines in iterMol2(file):
 		name=lines[1].strip()
 		print(name)
 		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,vectorSize))
 		names.append(name)
+		total += 1
+		if limit > 0 and total >= limit:
+			break
 	print(len(names))
 	return names, vectors
 
