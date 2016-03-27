@@ -30,5 +30,5 @@ notInhibitorsChsIds=[650, 682, 733, 864, 971, 1116, 1512, 1710, 2971, 3350, 5611
 
 ############################ CHEM bitVectors #####################################
 names, vectors = getChemThainingCompondsAsVectors(inhibitorsChsIds, notInhibitorsChsIds, False)
-#drawTree(distanceMatrixToTree(getDistanceMatrix(namesC, vectorsC)))
+#drawTree(distanceMatrixToTree(getDistanceMatrix(names, vectors)))
 genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, names, vectors)
