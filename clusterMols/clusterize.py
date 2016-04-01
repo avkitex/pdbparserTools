@@ -36,6 +36,8 @@ def getFormatedTime():
 	return str(datetime.utcnow().strftime("[%H:%M:%S]"))
 def logMsg(msg):
 	print(getFormatedTime(), msg)
+def errorMsg(msg):
+	print(getFormatedTime(), "ERROR:", msg)
 def appendBitVectors(bitVector1, bitVector2):
 	res = SparseBitVect(bitVector1.GetNumBits() + bitVector2.GetNumBits())
 	for i in range(bitVector1.GetNumBits()):
@@ -94,11 +96,11 @@ def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames 
 	logMsg("Obtaining bit vectors representation")
 	return chemNames, getChemBitVectorsArrayFromMolecules(chemMolecules, vectorSize)
 
-def getDistanceVectors(proteinFile, box, moleculesFile, topAtomsPersent = defaults['topAtomsPersent'], bondLenClustering = defaults['bondLenClustering'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = ''):
+def getProteinContactsAsBitVectors(proteinFile, box, moleculesFile, topAtomsPersent = defaults['topAtomsPersent'], bondLenClustering = defaults['bondLenClustering'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = '', limit=-1):
 	logMsg("Getting protein grid box and filtering active site atoms")
 	filteredBox=filterBoxAtoms(proteinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
 	logMsg("Getting bit vector representation")
-	return getMoleculesContactsAsBitVect(moleculesFile, filteredBox, bondLenClustering)
+	return getMoleculesContactsAsBitVect(moleculesFile, filteredBox, bondLenClustering, limit = limit)
 
 
 def composeBitVectorsToTree(namesC, vectorsC, namesD, vectorsD):
@@ -146,12 +148,6 @@ def outLowerTriangularDistanceMatrix(ofile, names, simil):
 		print(file=fh)
 	fh.close()
 
-def genDistanceMatrixFileFewCompounds():
-	namesD, vectorsD = getDistanceVectors()
-	similD = getSimilarityFromBitVectors(vectorsD)
-	del vectorsD
-	outLowerTriangularDistanceMatrix(args.distanceMatrixOutput, namesD, similD)
-
 def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 	fh = open(ofile, 'w')
 	logMsg('Generating and outputting distance matrix')
@@ -167,10 +163,10 @@ def genDistanceMatrixFileManyCompounds(ofile, names, vectors):
 		print(file=fh)
 	fh.close()
 
-def getDistTrainigToBaseDistMatrix(chemTrainMolsDict, namesBase, vectorsBase):
+def getTrainigToBaseSimilarityMatrix(trainMolsDict, namesBase, vectorsBase):
 	result = {}
-	for tname in chemTrainMolsDict:
-		result[tname] = dict(zip(namesBase, DataStructs.BulkTanimotoSimilarity(chemTrainMolsDict[tname], vectorsBase)))
+	for tname in trainMolsDict:
+		result[tname] = dict(zip(namesBase, DataStructs.BulkTanimotoSimilarity(trainMolsDict[tname], vectorsBase)))
 	return result
 	
 	
