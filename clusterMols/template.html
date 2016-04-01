@@ -1,0 +1,35 @@
+<html>
+<head>
+	<title>$title</title>
+</head>
+<body>
+	<div id = "wrapper">
+		<div id = "header">
+			<p>Work result</p>
+		</div>
+		<div id = "main">
+			<table>
+				<tr>
+					<td>Zinc ID</td>
+					<td>Score</td>
+					<td>Image</td>
+					<td>similarTo 1</td>
+					#for $i in range(2, $maxSimilar + 1)
+						<td>$i</td>
+					#end for
+				</tr>
+				#for $result in $results
+					<tr>
+						<td>$result</td>
+						<td>$results[$result]['score']</td>
+						<td><img src="http://zinc.docking.org/img/sub/${result.replace('ZINC', '')}.gif" alt="Zinc Item ${result}"></td>
+						#for $i in range($maxSimilar)
+							<td><img src="http://www.chemspider.com/ImagesHandler.ashx?id=$results[$result]['similar']&amp;w=250&amp;h=250"></td>
+						#end for
+					</tr>
+				#end for
+			</table>
+		</div>
+	</div>
+</body>
+</html>
