@@ -13,14 +13,15 @@ def getChemBitVectorsArrayFromMolecules(molecules, vectorSize = 1024):
 def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024, limit = -1):
 	vectors = []
 	names = []
-	total = 0
+	readMolecules = 0
 	for lines in iterMol2(file):
+		if readMolecules % 100 == 0:
+			print(readMolecules)
 		name=lines[1].strip()
-		print(name)
 		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,vectorSize))
 		names.append(name)
-		total += 1
-		if limit > 0 and total >= limit:
+		readMolecules += 1
+		if limit > 0 and readMolecules >= limit:
 			break
 	print(len(names))
 	return names, vectors
