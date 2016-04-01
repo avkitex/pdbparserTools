@@ -443,13 +443,18 @@ def iterateMoleculesMol2(file):
 				atoms.append(atom)
 			curline += 1
 		yield name, atoms
-def getMoleculesContactsAsBitVect(file, filteredBoxAtoms, distance):
+def getMoleculesContactsAsBitVect(file, filteredBoxAtoms, distance, limit = -1):
 	filteredBoxAtoms.sort(key=lambda atom: (atom.x, atom.y, atom.z))
 	contactsBV = []
 	names = []
+	readMols = 0
 	for name, atoms in iterateMoleculesMol2(file):
-		print(name)
+		if readMols % 100 == 0:
+			print(readMols)
 		contactsBV.append(getContactsAsBitVec(singleMolecule(atoms), filteredBoxAtoms, distance))
 		names.append(name)
+		readMols += 1
+		if limit > 0 and readMols >= limit:
+			break
 	print('Total ' + str(len(names)) + ' molecules')
 	return names, contactsBV
