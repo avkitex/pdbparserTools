@@ -168,5 +168,13 @@ def getTrainigToBaseSimilarityMatrix(trainMolsDict, namesBase, vectorsBase):
 	for tname in trainMolsDict:
 		result[tname] = dict(zip(namesBase, DataStructs.BulkTanimotoSimilarity(trainMolsDict[tname], vectorsBase)))
 	return result
-	
+def getCompoundToSetSimilarity(vector, molsDict):
+	res = {}
+	for i in molsDict:
+		res[i] =  DataStructs.TanimotoSimilarity(vector, molsDict[i])
+	return res
+			
+			
+			
+			
 	

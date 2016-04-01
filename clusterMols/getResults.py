@@ -3,9 +3,10 @@ from __future__ import print_function
 import os.path, argparse, sys
 from copy import deepcopy
 
-from clusterize import getChemMoleculesAsBitVectorsOneByOne, getChemThainingCompondsAsVectors, getTrainigToBaseSimilarityMatrix, getProteinContactsAsBitVectors, errorMsg
+from clusterize import getChemMoleculesAsBitVectorsOneByOne, getChemThainingCompondsAsVectors, getTrainigToBaseSimilarityMatrix, getProteinContactsAsBitVectors, getCompoundToSetSimilarity, errorMsg
 from clusterize import point3D, boxParams
 from clusterize import drawTree, distanceMatrixToTree, getDistanceMatrix
+from htmlGenerator import createHtmlReport
 
 parser = argparse.ArgumentParser(prog='genTrainingChemDm.py', usage='%(prog)s [options]', description='description',
 								 epilog="\xa9 Avktex 2016")
@@ -172,7 +173,9 @@ def readDockingResults(resFile):
 		result[entry["Ligand"]] = float(entry["1_Energy"].replace(',','.'))
 	fHandle.close()
 	return result
-		
+def getBestSimilarToMolset(vector, bolsDict):
+	resDict = getCompoundToSetSimilarity(vector, bolsDict)
+	return [{"id":x[4:], "type": "inhibitor" if x[:3].lower() == 'yes' else "notinhibitor", "similarity":resDict[x]} for x in sorted(resDict.keys(), key = resDict.get, reverse=True)]
 ############################ main #####################################
 
 baseDockingResults = readDockingResults(args.baseDockingResult)
@@ -186,15 +189,17 @@ chemBaseMolsDict = dict(zip(namesBaseChem, vectorsBaseChem))
 box = boxParams(point3D(asCenterX, asCenterY, asCenterZ), point3D(gridSizeX, gridSizeY, gridSizeZ))
 
 namesTrainContacts, vectorsTrainContacts = getProteinContactsAsBitVectors(args.proteinMol2, box, args.trainingDockedMol2)
+contactsTrainMolsDict = dict(zip(namesTrainContacts, vectorsTrainContacts))
 namesBaseContacts, vectorsBaseContacts = getProteinContactsAsBitVectors(args.proteinMol2, box, args.baseDockedMol2)
+contactsBaseMolsDict = dict(zip(namesBaseContacts, vectorsBaseContacts))
 
 finalResult = set()
 
-for contactsTrainSet, contactsBaseSet in contactsTreeWalkGenerator(namesTrainContacts, vectorsTrainContacts, namesBaseContacts, vectorsBaseContacts):
-	print("Group:")
+for contactsTrainSet, contactsBaseSet in contactsTreeWalkGenerator(namesTrainContacts, vectorsTrainContacts, namesBaseContacts, vectorsBaseContacts, topPercent = 1):
+	print("Analyzing group:")
 	print(contactsTrainSet)
-	print('Subset1')
-	print(contactsBaseSet)
+	#print('Subset1')
+	#print(contactsBaseSet)
 	bestCompounds = set()
 	
 	trainSubset = []
@@ -208,22 +213,23 @@ for contactsTrainSet, contactsBaseSet in contactsTreeWalkGenerator(namesTrainCon
 	for chemTrainSet, chemBaseSet in chemTreeWalkGenerator(contactsTrainSet, trainSubset, contactsBaseSet, baseSubset, topPercent = 30):
 		for cName in chemBaseSet:
 			bestCompounds.add(cName)
-	print('Best compounds')
-	print(bestCompounds)
+	#print('Best compounds')
+	#print(bestCompounds)
 	bestCompoundsList = list(bestCompounds)
 	bestCompoundsList.sort(key = lambda x: baseDockingResults[x])
 	for cName in bestCompoundsList[:20]:
-		print('  ', cName, baseDockingResults[cName])
+		#print('  ', cName, baseDockingResults[cName])
 		finalResult.add(cName)
-	print("*******************")
+	#print("*******************")
 
 finalResultList = list(finalResult)
 finalResultList.sort(key = lambda x: baseDockingResults[x])
+results = []
 for cName in finalResultList:
 	print('  ', cName, baseDockingResults[cName])
+	results.append({"name":cName, "energy":baseDockingResults[cName], "similarChem":getBestSimilarToMolset(chemBaseMolsDict[cName], chemTrainMolsDict), "similarContacts":getBestSimilarToMolset(contactsBaseMolsDict[cName], contactsTrainMolsDict)})
 
-
-
+createHtmlReport('out.html', results)
 
 
 
