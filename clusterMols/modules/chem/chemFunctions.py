@@ -68,3 +68,14 @@ def getTrainingCompounds(inhibitorsChsIds=[], notInhibitorsChsIds=[], longNames 
 
 	moleculesN, namesN = getChemspiderCompounds(token, notInhibitorsChsIds, 'not', '_', longNames, onlyLettersDigits)
 	return namesY + namesN, moleculesY + moleculesN
+
+def getLongNames(molsDict, pref = 4, onlyLettersDigits = False, token = '2228d430-a955-416b-b920-14547d28df9e'):
+	cs = ChemSpider(token)
+	names = {}
+	for mol in molsDict:
+		comp = cs.get_compound(mol[pref:])
+		nName = comp.common_name.encode('ascii','ignore')
+		if onlyLettersDigits:
+			nName = leftOnlyLettersDigits(nName)
+		names[mol] = nName
+	return names
