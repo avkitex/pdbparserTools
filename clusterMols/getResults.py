@@ -3,7 +3,8 @@ from __future__ import print_function
 import os.path, argparse, sys
 from copy import deepcopy
 
-from clusterize import getChemMoleculesAsBitVectorsOneByOne, getChemThainingCompondsAsVectors, getTrainigToBaseSimilarityMatrix, getProteinContactsAsBitVectors, getCompoundToSetSimilarity, errorMsg
+from clusterize import getChemMoleculesAsBitVectorsOneByOne, getChemThainingCompondsAsVectors, getTrainigToBaseSimilarityMatrix, getProteinContactsAsBitVectors, getCompoundToSetSimilarity, getLongNames, getProteinActiveSiteAtoms
+from modules.common.f import errorMsg, logMsg, dumpJson
 from clusterize import point3D, boxParams
 from clusterize import drawTree, distanceMatrixToTree, getDistanceMatrix
 from htmlGenerator import createHtmlReport
@@ -15,6 +16,17 @@ parser.add_argument('-td', '--trainingDockedMol2', metavar='GlobConfig', type=st
 parser.add_argument('-bd', '--baseDockedMol2', metavar='GlobConfig', type=str, help='Full path to database docked multiMol2', required=True)
 parser.add_argument('-bdr', '--baseDockingResult', metavar='GlobConfig', type=str, help='Full path to database docking result tsv file', required=True)
 parser.add_argument('-pr', '--proteinMol2', metavar='GlobConfig', type=str, help='Full path to file with protein in mol2 format.', required=True)
+parser.add_argument('-mt', '--method', choices=['contacts1_chem', 'chem_contacts', 'contacts2_chem'], default='contacts1_chem',  help='Clusterisation method.')
+parser.add_argument('-contr', '--contactsTreshold', type=int, default=60,  help='Contacts best compounds threshold')
+parser.add_argument('-chmtr', '--chemTreshold', type=int, default=75,  help='Chem best compounds threshold.')
+parser.add_argument('-maxcl', '--maxcluster', type=int, default=30,  help='Max compounds from each cluster.')
+parser.add_argument('-mtop', '--maxtop', type=int, default=150,  help='Max report top compounds.')
+parser.add_argument('-msim', '--maxsimilar', type=int, default=3,  help='Max report similar compounds.')
+parser.add_argument('-htmlrep', '--htmlreport', type=str, default='report.html',  help='Html out file.')
+parser.add_argument('-sco', '--scoresout', type=str,  help='Scores out file.')
+parser.add_argument('-ypchm', '--yesPersChem', type=int, default=80,  help='Yes % for clade identification in chemical step.')
+parser.add_argument('-ypcon', '--yesPersContacts', type=int, default=70, help='Yes % for clade identification in contacts step.')
+parser.add_argument('-outj', '--outJson', type=str, default='report.json', help='Report in json format')
 #parser.add_argument('-bp', '--boxParams', metavar='GlobConfig', type=double, help='Box params file', required=True)
 
 
@@ -173,11 +185,78 @@ def readDockingResults(resFile):
 		result[entry["Ligand"]] = float(entry["1_Energy"].replace(',','.'))
 	fHandle.close()
 	return result
-def getBestSimilarToMolset(vector, bolsDict):
-	resDict = getCompoundToSetSimilarity(vector, bolsDict)
-	return [{"id":x[4:], "type": "inhibitor" if x[:3].lower() == 'yes' else "notinhibitor", "similarity":resDict[x]} for x in sorted(resDict.keys(), key = resDict.get, reverse=True)]
-############################ main #####################################
+def getBestSimilarToMolset(vector, molsDict, longNames = {}):
+	resDict = getCompoundToSetSimilarity(vector, molsDict)
+	return [{"id":x[4:], "type": "inhibitor" if x[:3].lower() == 'yes' else "notinhibitor", "longname":longNames[x], "similarity":int(resDict[x]*100)} for x in sorted(resDict.keys(), key = resDict.get, reverse=True)]
+	
+	
+def maxFromMolSimilDict(molDict):
+	maxs = 0
+	for i in molDict:
+		maxs = max(maxs, molDict[i])
+	return maxs
+def averageFromMolSimilDict(molDict):
+	if len(molDict):
+		summ = 0
+		for i in molDict:
+			summ += molDict[i]
+		return summ *1. / len(molDict)
+	else:
+		return 0
+def constructPattern(contactsTrainDict, chemTrainDict, prefix, sType = 3):
+	pattern = []
+	contributed = []
+	total = 0
+	for molName, vector in contactsTrainDict.items():
+		if prefix != molName[:3]:
+			continue
+		total += 1
+		if not len(pattern):
+			for bit in range(len(vector)):
+				contributed.append({})
+				if vector[bit]:
+					pattern.append(1)
+					contributed[bit][molName] = chemTrainDict[molName]
+				else:
+					pattern.append(0)
+		else:
+			for bit in vector.GetOnBits():
+				if sType == 1:
+					pattern[bit] += 1
+				elif sType == 2:
+					pattern[bit] += (1 - averageFromMolSimilDict(getCompoundToSetSimilarity(chemTrainDict[molName], contributed[bit])))
+				else:
+					pattern[bit] += (1 - maxFromMolSimilDict(getCompoundToSetSimilarity(chemTrainDict[molName], contributed[bit])))
+				contributed[bit][molName] = chemTrainDict[molName]
+	if total > 0:
+		return [x * 1. / total for x in pattern]
+	else:
+		return []
 
+def getMoleculePatternScore(pattern, vector):
+	if len(pattern) != len(vector):
+		return -1
+	score = 0
+	for i in range(len(vector)):
+		if vector[i]:
+			score += pattern[i]
+	return score
+def calculateScores(inhibitorsPattern, notInhibitorsPattern, contactsBaseMolsDict):
+	scoreS = {}
+	for i in contactsBaseMolsDict:
+		#print(i, getMoleculePatternScore(inhibitorsPattern, contactsBaseMolsDict[i]), getMoleculePatternScore(notInhibitorsPattern, contactsBaseMolsDict[i]))
+		inh = getMoleculePatternScore(inhibitorsPattern, contactsBaseMolsDict[i])
+		nInh = getMoleculePatternScore(notInhibitorsPattern, contactsBaseMolsDict[i])
+		if nInh == 0:
+			nInh = 0.1
+		scoreS[i] = inh * 1. / nInh
+	return scoreS
+def saveResults(file, results):
+	dumpJson(file, results)
+############################ main #####################################
+if args.method != 'contacts1_chem':
+	print('Other methods are not implemented')
+	sys.exit(1)
 baseDockingResults = readDockingResults(args.baseDockingResult)
 
 namesTrainChem, vectorsTrainChem = getChemThainingCompondsAsVectors(inhibitorsChsIds, notInhibitorsChsIds, False)
@@ -187,49 +266,72 @@ chemBaseMolsDict = dict(zip(namesBaseChem, vectorsBaseChem))
 
 
 box = boxParams(point3D(asCenterX, asCenterY, asCenterZ), point3D(gridSizeX, gridSizeY, gridSizeZ))
+proteinActiveSiteAtoms = getProteinActiveSiteAtoms(args.proteinMol2, box)
 
-namesTrainContacts, vectorsTrainContacts = getProteinContactsAsBitVectors(args.proteinMol2, box, args.trainingDockedMol2)
+namesTrainContacts, vectorsTrainContacts = getProteinContactsAsBitVectors(proteinActiveSiteAtoms, args.trainingDockedMol2)
 contactsTrainMolsDict = dict(zip(namesTrainContacts, vectorsTrainContacts))
-namesBaseContacts, vectorsBaseContacts = getProteinContactsAsBitVectors(args.proteinMol2, box, args.baseDockedMol2)
+namesBaseContacts, vectorsBaseContacts = getProteinContactsAsBitVectors(proteinActiveSiteAtoms, args.baseDockedMol2)
 contactsBaseMolsDict = dict(zip(namesBaseContacts, vectorsBaseContacts))
 
-finalResult = set()
+logMsg('Calculating inhibitors pattern')
+inhibitorsPattern = constructPattern(contactsTrainMolsDict, chemTrainMolsDict, 'yes')
+logMsg('Calculating not inhibitors pattern')
+notInhibitorsPattern = constructPattern(contactsTrainMolsDict, chemTrainMolsDict, 'not')
 
-for contactsTrainSet, contactsBaseSet in contactsTreeWalkGenerator(namesTrainContacts, vectorsTrainContacts, namesBaseContacts, vectorsBaseContacts, topPercent = 1):
-	print("Analyzing group:")
-	print(contactsTrainSet)
-	#print('Subset1')
-	#print(contactsBaseSet)
-	bestCompounds = set()
+
+logMsg('Calculating scores')
+scoreS = calculateScores(inhibitorsPattern, notInhibitorsPattern, contactsBaseMolsDict)
 	
-	trainSubset = []
-	baseSubset = []
-	for x in contactsTrainSet:
-		if x in chemTrainMolsDict:
-			trainSubset.append(chemTrainMolsDict[x])
-	for x in contactsBaseSet:
-		if x in chemBaseMolsDict:
-			baseSubset.append(chemBaseMolsDict[x])
-	for chemTrainSet, chemBaseSet in chemTreeWalkGenerator(contactsTrainSet, trainSubset, contactsBaseSet, baseSubset, topPercent = 30):
-		for cName in chemBaseSet:
-			bestCompounds.add(cName)
-	#print('Best compounds')
-	#print(bestCompounds)
-	bestCompoundsList = list(bestCompounds)
-	bestCompoundsList.sort(key = lambda x: baseDockingResults[x])
-	for cName in bestCompoundsList[:20]:
-		#print('  ', cName, baseDockingResults[cName])
-		finalResult.add(cName)
-	#print("*******************")
+if 'scoresout' in args and args.scoresout is not None:
+	scoresH = open(args.scoresout, 'w')
+	for s in sorted(scoreS.keys(), key=scoreS.get, reverse=True):
+		print(s, scoreS[s], file=scoresH)
+	scoresH.close()
+	
+logMsg('Calculating results')
+
+finalResult = set()
+if args.method == 'contacts1_chem':
+	for contactsTrainSet, contactsBaseSet in contactsTreeWalkGenerator(namesTrainContacts, vectorsTrainContacts, namesBaseContacts, vectorsBaseContacts, minYesThreshold = args.yesPersContacts, topPercent = args.contactsTreshold):
+		logMsg("Analyzing group: " + ' '.join(contactsTrainSet))
+		#print('Subset1')
+		#print(contactsBaseSet)
+		bestCompounds = set()
+		
+		trainSubset = []
+		baseSubset = []
+		for x in contactsTrainSet:
+			if x in chemTrainMolsDict:
+				trainSubset.append(chemTrainMolsDict[x])
+		for x in contactsBaseSet:
+			if x in chemBaseMolsDict:
+				baseSubset.append(chemBaseMolsDict[x])
+		for chemTrainSet, chemBaseSet in chemTreeWalkGenerator(contactsTrainSet, trainSubset, contactsBaseSet, baseSubset, minYesThreshold = args.yesPersChem, topPercent = args.chemTreshold):
+			for cName in chemBaseSet:
+				bestCompounds.add(cName)
+		#print('Best compounds')
+		#print(bestCompounds)
+		bestCompoundsList = list(bestCompounds)
+		bestCompoundsList.sort(key = lambda x: baseDockingResults[x])
+		for cName in bestCompoundsList[:args.maxcluster]:
+			#print('  ', cName, baseDockingResults[cName])
+			finalResult.add(cName)
+		#print("*******************")
+else:
+	errorMsg('Methods are not implemented')
+	sys.exit(1)
 
 finalResultList = list(finalResult)
 finalResultList.sort(key = lambda x: baseDockingResults[x])
 results = []
+trainCompNames=getLongNames(chemTrainMolsDict)
+
 for cName in finalResultList:
 	print('  ', cName, baseDockingResults[cName])
-	results.append({"name":cName, "energy":baseDockingResults[cName], "similarChem":getBestSimilarToMolset(chemBaseMolsDict[cName], chemTrainMolsDict), "similarContacts":getBestSimilarToMolset(contactsBaseMolsDict[cName], contactsTrainMolsDict)})
+	results.append({"id":cName.replace('ZINC', ''), "energy":baseDockingResults[cName], "score":scoreS[cName], "similarChem":getBestSimilarToMolset(chemBaseMolsDict[cName], chemTrainMolsDict, trainCompNames), "similarContacts":getBestSimilarToMolset(contactsBaseMolsDict[cName], contactsTrainMolsDict, trainCompNames)})
 
-createHtmlReport('out.html', results)
+saveResults(args.outJson, results)
+createHtmlReport(args.htmlreport, results, maxsimil=min(max(args.maxsimilar, 3), 10), maxOutComp = args.maxtop)
 
 
 
