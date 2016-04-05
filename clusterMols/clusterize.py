@@ -11,7 +11,6 @@
 # fneighbor -matrixtype l -datafile bigDM.dm -treetype n -outfile out
 
 from __future__ import print_function
-from datetime import datetime
 
 from rdkit import DataStructs
 from rdkit.DataStructs.cDataStructs import SparseBitVect
@@ -22,6 +21,7 @@ from Bio import Phylo
 
 from modules.positional.contactsFunctions import *
 from modules.chem.chemFunctions import *
+from modules.common.f import errorMsg, logMsg
 
 defaults = {}
 
@@ -32,12 +32,6 @@ defaults['minCavSize'] = 4
 defaults['topAtomsPersent'] = 20
 
 
-def getFormatedTime():
-	return str(datetime.utcnow().strftime("[%H:%M:%S]"))
-def logMsg(msg):
-	print(getFormatedTime(), msg)
-def errorMsg(msg):
-	print(getFormatedTime(), "ERROR:", msg)
 def appendBitVectors(bitVector1, bitVector2):
 	res = SparseBitVect(bitVector1.GetNumBits() + bitVector2.GetNumBits())
 	for i in range(bitVector1.GetNumBits()):
@@ -96,10 +90,12 @@ def getChemThainingCompondsAsVectors(inhibitorsArr, notInhibitorsArr, longNames 
 	logMsg("Obtaining bit vectors representation")
 	return chemNames, getChemBitVectorsArrayFromMolecules(chemMolecules, vectorSize)
 
-def getProteinContactsAsBitVectors(proteinFile, box, moleculesFile, topAtomsPersent = defaults['topAtomsPersent'], bondLenClustering = defaults['bondLenClustering'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = '', limit=-1):
+def getProteinActiveSiteAtoms(proteinFile, box, topAtomsPersent = defaults['topAtomsPersent'], stepSize = defaults['stepSize'], minCavSize = defaults['minCavSize'], outBoxFile = ''):
 	logMsg("Getting protein grid box and filtering active site atoms")
-	filteredBox=filterBoxAtoms(proteinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
-	logMsg("Getting bit vector representation")
+	return filterBoxAtoms(proteinFile, box, stepSize, minCavSize, topAtomsPersent, outBoxFile)
+	
+def getProteinContactsAsBitVectors(filteredBox, moleculesFile, bondLenClustering = defaults['bondLenClustering'], limit=-1):
+	logMsg("Getting contacts with protein bit vector representation")
 	return getMoleculesContactsAsBitVect(moleculesFile, filteredBox, bondLenClustering, limit = limit)
 
 
