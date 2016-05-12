@@ -2,7 +2,7 @@ from __future__ import print_function
 import os.path, argparse, sys
 from clusterize import point3D, boxParams
 
-from clusterize import getDistanceVectors, genDistanceMatrixFileManyCompounds
+from clusterize import getProteinActiveSiteAtoms, getProteinContactsAsBitVectors, genDistanceMatrixFileManyCompounds
 #from clusterize import drawTree, distanceMatrixToTree
 
 
@@ -33,6 +33,7 @@ gridSizeZ = 30
 
 box = boxParams(point3D(asCenterX, asCenterY, asCenterZ), point3D(gridSizeX, gridSizeY, gridSizeZ))
 
-names, vectors = getDistanceVectors(args.proteinMol2, box, args.inputMol2)
+filterBoxAtoms = getProteinActiveSiteAtoms(args.proteinMol2, box)
+names, vectors = getProteinContactsAsBitVectors(filterBoxAtoms, args.inputMol2)
 #drawTree(distanceMatrixToTree(getDistanceMatrix(names, vectors)))
 genDistanceMatrixFileManyCompounds(args.distanceMatrixOutput, names, vectors)
