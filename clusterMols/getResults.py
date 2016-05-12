@@ -241,6 +241,41 @@ def getMoleculePatternScore(pattern, vector):
 		if vector[i]:
 			score += pattern[i]
 	return score
+def getMostEssentialResidues(inhPattern, notInhPattern, atoms, threshold = 1.4, cType = 'div'):
+	essentialPatternRes = {}
+	inhAverage = 0
+	notInhAverage = 0
+	for i in range(len(inhPattern)):
+		inhAverage += inhPattern[i]
+		notInhAverage += notInhPattern[i]
+	inhAverage = inhAverage *1. / len(inhPattern)
+	notInhAverage = notInhAverage *1. / len(notInhPattern)
+	for i in range(len(inhPattern)):
+		if cType == 'div':
+			if notInhPattern[i] > 0:
+				if inhPattern[i] > notInhPattern[i]:
+					diff = inhPattern[i] * 1. / notInhPattern[i]
+				else:
+					if inhPattern[i] > 0:
+						diff = notInhPattern[i] * 1. / inhPattern[i]
+					else:
+						diff = notInhPattern[i] * 1. / notInhAverage
+					diff *= -1
+				if abs(diff) < threshold:
+					diff = 0
+			else:
+				diff = inhPattern[i] * 1. / inhAverage
+				if diff < threshold:
+					diff = 0
+			atomName = atoms[i].resname# + '_' + atoms[i].ctype
+			if atoms[i].resname not in essentialPatternRes:
+				essentialPatternRes[atoms[i].resname] = {}
+			if diff != 0:
+				essentialPatternRes[atoms[i].resname][atoms[i].name] = diff
+	for atomD in essentialPatternRes:
+		essentialPatternRes[atomD] = list(essentialPatternRes[atomD])
+		essentialPatternRes[atomD].sort(reverse=True)
+	return essentialPatternRes
 def calculateScores(inhibitorsPattern, notInhibitorsPattern, contactsBaseMolsDict):
 	scoreS = {}
 	for i in contactsBaseMolsDict:
@@ -249,7 +284,7 @@ def calculateScores(inhibitorsPattern, notInhibitorsPattern, contactsBaseMolsDic
 		nInh = getMoleculePatternScore(notInhibitorsPattern, contactsBaseMolsDict[i])
 		if nInh == 0:
 			nInh = 0.1
-		scoreS[i] = inh * 1. / nInh
+		scoreS[i] = inh * 1. - nInh
 	return scoreS
 def saveResults(file, results):
 	dumpJson(file, results)
@@ -262,30 +297,43 @@ baseDockingResults = readDockingResults(args.baseDockingResult)
 namesTrainChem, vectorsTrainChem = getChemThainingCompondsAsVectors(inhibitorsChsIds, notInhibitorsChsIds, False)
 chemTrainMolsDict = dict(zip(namesTrainChem, vectorsTrainChem))
 namesBaseChem, vectorsBaseChem = getChemMoleculesAsBitVectorsOneByOne(args.baseMol2)
-chemBaseMolsDict = dict(zip(namesBaseChem, vectorsBaseChem))
 
 
 box = boxParams(point3D(asCenterX, asCenterY, asCenterZ), point3D(gridSizeX, gridSizeY, gridSizeZ))
 proteinActiveSiteAtoms = getProteinActiveSiteAtoms(args.proteinMol2, box)
 
+
 namesTrainContacts, vectorsTrainContacts = getProteinContactsAsBitVectors(proteinActiveSiteAtoms, args.trainingDockedMol2)
 contactsTrainMolsDict = dict(zip(namesTrainContacts, vectorsTrainContacts))
 namesBaseContacts, vectorsBaseContacts = getProteinContactsAsBitVectors(proteinActiveSiteAtoms, args.baseDockedMol2)
 contactsBaseMolsDict = dict(zip(namesBaseContacts, vectorsBaseContacts))
+		
+
 
 logMsg('Calculating inhibitors pattern')
 inhibitorsPattern = constructPattern(contactsTrainMolsDict, chemTrainMolsDict, 'yes')
 logMsg('Calculating not inhibitors pattern')
 notInhibitorsPattern = constructPattern(contactsTrainMolsDict, chemTrainMolsDict, 'not')
 
+for i in range(len(inhibitorsPattern)):
+	print(i + 1, inhibitorsPattern[i], notInhibitorsPattern[i])
+
+mostEssentialRes = getMostEssentialResidues(inhibitorsPattern, notInhibitorsPattern, proteinActiveSiteAtoms)
+logMsg('Calculating most essential for binding residues')
+for atom in mostEssentialRes:
+	print(atom, end = '\t')
+	for diffs in mostEssentialRes[atom]:
+		print(diffs, end = '\t')
+	print()
 
 logMsg('Calculating scores')
 scoreS = calculateScores(inhibitorsPattern, notInhibitorsPattern, contactsBaseMolsDict)
 	
 if 'scoresout' in args and args.scoresout is not None:
 	scoresH = open(args.scoresout, 'w')
+	print('Id\tScore\tEnergy', file=scoresH)
 	for s in sorted(scoreS.keys(), key=scoreS.get, reverse=True):
-		print(s, scoreS[s], file=scoresH)
+		print(s, scoreS[s], baseDockingResults[s], sep='\t', file=scoresH)
 	scoresH.close()
 	
 logMsg('Calculating results')
