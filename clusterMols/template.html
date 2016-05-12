@@ -59,7 +59,13 @@
 								<p class="">
 							#end if
 							${'%.2f' % $results[$index]['score']}</p></td>
-						<td><img src="http://zinc.docking.org/img/sub/${$results[$index]['id']}.gif" alt="Zinc Item $results[$index]['id']"></td>
+						<td>
+						#if len($results[$index]['id']) > 4
+							<img src="http://zinc.docking.org/img/sub/${$results[$index]['id']}.gif" alt="Zinc Item $results[$index]['id']">
+						#else
+							<img src="http://www.rcsb.org/pdb/images/${$results[$index]['id']}_270.gif" alt="Pdb ligand $results[$index]['id']">
+						#end if 	
+						</td>
 						#for $i in $results[$index]['similarContacts'][:$maxSimilar]
 							<td><div class = "${i.type}"><img src="http://www.chemspider.com/ImagesHandler.ashx?id=${i.id}&amp;w=${iwidth}&amp;h=${iheight}">
 							<p>${i.similarity}%</p>
