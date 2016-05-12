@@ -18,7 +18,9 @@ def getChemMoleculesAsBitVectorsOneByOne(file, vectorSize = 1024, limit = -1):
 		if readMolecules % 100 == 0:
 			print(readMolecules)
 		name=lines[1].strip()
-		vectors.append(AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromMol2Block(''.join(lines)),2,vectorSize))
+		mol = Chem.MolFromMol2Block(''.join(lines))
+		mol2 = Chem.AddHs(mol)
+		vectors.append(AllChem.GetMorganFingerprintAsBitVect(mol2,2,vectorSize))
 		names.append(name)
 		readMolecules += 1
 		if limit > 0 and readMolecules >= limit:
@@ -30,8 +32,10 @@ def readMoleculesRd(file):
 	molecules=[]
 	names=[]
 	for lines in iterMol2(file):
-		molecules.append(Chem.MolFromMol2Block(''.join(lines)))
 		names.append(lines[1])
+		mol = Chem.MolFromMol2Block(''.join(lines))
+		mol2 = Chem.AddHs(mol)
+		molecules.append(mol2)
 	print(len(molecules))
 	return molecules, names
 
@@ -58,7 +62,9 @@ def getChemspiderCompounds(token, list, pref, delim = '_', longNames = True, onl
 		#.replace('(', '_').replace(')', '_').replace('[', '_').replace(']', '_').replace(',', '_').replace(' ', '_').replace(';', '_')[:25]
 		print(name)
 		smiles=comp.smiles.encode('ascii','ignore')
-		molecules.append(Chem.MolFromSmiles(smiles))
+		mol=Chem.MolFromSmiles(smiles)
+		mol2=Chem.AddHs(mol)
+		molecules.append(mol2)
 		names.append(name)
 	return molecules, names
 
